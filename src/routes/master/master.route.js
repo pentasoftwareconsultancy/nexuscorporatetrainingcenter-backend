@@ -1,0 +1,60 @@
+import express from "express";
+
+import { pagination } from "../../middlewares/pagination.js";
+import { cache, cacheStore } from "../../utils/cache.js"; 
+import masterController from "../../controllers/master/master.controller.js";
+import { protect } from "../../middlewares/auth.middleware.js";
+
+const router = express.Router();
+
+/* ---------------- CLEAR COURSE CACHE ---------------- */
+const clearCoursesCache = (req, res, next) => {
+  cacheStore.del("courses");
+  next();
+};
+
+/* --------------------- COURSES --------------------- */
+
+router.post(
+  "/courses",
+  protect,
+  clearCoursesCache, // CLEAR CACHE
+  masterController.createCourse
+);
+
+router.get(
+  "/courses",
+  pagination,
+  cache("courses"), // USE CACHE
+  masterController.getAllCourses
+);
+
+router.get("/courses/:id", masterController.getCourseById);
+
+router.put(
+  "/courses/:id",
+  protect,
+  clearCoursesCache, // CLEAR CACHE
+  masterController.updateCourse
+);
+
+router.delete(
+  "/courses/:id",
+  protect,
+  clearCoursesCache, // CLEAR CACHE
+  masterController.deleteCourse
+);
+
+/* --------------------- BATCHES --------------------- */
+
+router.post("/batches", protect, masterController.createBatch);
+
+router.get("/batches", pagination, masterController.getAllBatches);
+
+router.get("/batches/:id", masterController.getBatchById);
+
+router.put("/batches/:id", protect, masterController.updateBatch);
+
+router.delete("/batches/:id", protect, masterController.deleteBatch);
+
+export default router;
