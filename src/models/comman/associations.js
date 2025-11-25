@@ -1,6 +1,6 @@
 import User from "../users/user.model.js";
 import { Batch, Course } from "../master/master.models.js";
-import { Gallery, Media } from "../media/media.models.js";
+import { City, College, Media } from "../media/media.models.js";
 import { Event, EventImage } from "../events/event.models.js";
 import {
   Option,
@@ -41,18 +41,13 @@ export function setupAssociations() {
     as: "batches",
   });
 
-  //--------------------------
-  // GALLERY ↔ MEDIA
-  //--------------------------
-  Gallery.hasMany(Media, {
-    foreignKey: "galleryId",
-    as: "media",
-  });
+   /* CITY → COLLEGE */
+  City.hasMany(College, { foreignKey: "cityId", as: "colleges" });
+  College.belongsTo(City, { foreignKey: "cityId", as: "city" });
 
-  Media.belongsTo(Gallery, {
-    foreignKey: "galleryId",
-    as: "gallery",
-  });
+  /* COLLEGE → MEDIA */
+  College.hasMany(Media, { foreignKey: "collegeId", as: "images" });
+  Media.belongsTo(College, { foreignKey: "collegeId", as: "college" });
 
   //--------------------------
   // EVENT ↔ EVENT IMAGES

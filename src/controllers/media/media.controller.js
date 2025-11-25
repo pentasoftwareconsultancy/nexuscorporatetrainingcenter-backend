@@ -1,52 +1,127 @@
 import mediaService from "../../services/media/media.service.js";
-import { cacheStore } from "../../utils/cache.js";
 
 const mediaController = {
-  createGallery: async (req, res) => {
+  /* ========== CITY ========== */
+  createCity: async (req, res) => {
     try {
-      const data = await mediaService.createGallery(req.body);
-      cacheStore.del("galleries");
+      const data = await mediaService.createCity(req.body);
       res.json({ success: true, data });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });
     }
   },
 
-  getAllGalleries: async (req, res) => {
+  getCities: async (req, res) => {
     try {
-      const data = await mediaService.getAllGalleries();
+      const data = await mediaService.getCities();
       res.json({ success: true, data });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });
     }
   },
 
-  getGalleryById: async (req, res) => {
+  /* ========== COLLEGE ========== */
+  createCollege: async (req, res) => {
     try {
-      const data = await mediaService.getGalleryById(req.params.id);
+      const data = await mediaService.createCollege(req.body);
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  getCollegesByCity: async (req, res) => {
+    try {
+      const data = await mediaService.getCollegesByCity(req.params.cityId);
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  /* ========== IMAGES ========== */
+  uploadImage: async (req, res) => {
+    try {
+      if (!req.file)
+        return res
+          .status(400)
+          .json({ success: false, message: "File required" });
+
+      const data = await mediaService.uploadImage(
+        req.body.collegeId,
+        req.file.path,
+        req.body.caption || null
+      );
+
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  getImagesByCollege: async (req, res) => {
+    try {
+      const data = await mediaService.getImagesByCollege(req.params.collegeId);
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  /* ===================== CITY ===================== */
+  updateCity: async (req, res) => {
+    try {
+      const data = await mediaService.updateCity(req.params.id, req.body);
       res.json({ success: true, data });
     } catch (err) {
       res.status(404).json({ success: false, message: err.message });
     }
   },
 
-  uploadMedia: async (req, res) => {
+  deleteCity: async (req, res) => {
     try {
-      const data = await mediaService.uploadMedia(req.file, req.body);
-      cacheStore.del("galleries");
+      const data = await mediaService.deleteCity(req.params.id);
+      res.json({ success: true, message: data.message });
+    } catch (err) {
+      res.status(404).json({ success: false, message: err.message });
+    }
+  },
+
+  /* ===================== COLLEGE ===================== */
+  updateCollege: async (req, res) => {
+    try {
+      const data = await mediaService.updateCollege(req.params.id, req.body);
       res.json({ success: true, data });
     } catch (err) {
-      res.status(400).json({ success: false, message: err.message });
+      res.status(404).json({ success: false, message: err.message });
+    }
+  },
+
+  deleteCollege: async (req, res) => {
+    try {
+      const data = await mediaService.deleteCollege(req.params.id);
+      res.json({ success: true, message: data.message });
+    } catch (err) {
+      res.status(404).json({ success: false, message: err.message });
+    }
+  },
+
+  /* ===================== MEDIA ===================== */
+  updateMedia: async (req, res) => {
+    try {
+      const data = await mediaService.updateMedia(req.params.id, req.body);
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(404).json({ success: false, message: err.message });
     }
   },
 
   deleteMedia: async (req, res) => {
     try {
       const data = await mediaService.deleteMedia(req.params.id);
-      cacheStore.del("galleries");
-      res.json({ success: true, data });
+      res.json({ success: true, message: data.message });
     } catch (err) {
-      res.status(400).json({ success: false, message: err.message });
+      res.status(404).json({ success: false, message: err.message });
     }
   },
 };
