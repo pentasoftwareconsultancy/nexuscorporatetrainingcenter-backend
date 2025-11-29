@@ -1,6 +1,13 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../config/db.js";
 
+/* ================= COURSECATEGORY ================= */
+
+export const CourseCategory = sequelize.define("CourseCategory", {
+  id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+  name: { type: DataTypes.STRING, allowNull: false },
+});
+
 export const Course = sequelize.define("Course", {
   id: {
     type: DataTypes.INTEGER,
@@ -16,6 +23,12 @@ export const Course = sequelize.define("Course", {
     defaultValue: true,
   },
   createdBy: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+
+  categoryId: {
+    // ✅ NEW COLUMN
     type: DataTypes.INTEGER,
     allowNull: true,
   },
