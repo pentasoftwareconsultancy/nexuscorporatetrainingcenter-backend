@@ -12,6 +12,13 @@ import {
 } from "../test/test.models.js";
 
 export function setupAssociations() {
+  /* COURSE CATEGORY → COURSE */
+  CourseCategory.hasMany(Course, { foreignKey: "categoryId", as: "courses" });
+  Course.belongsTo(CourseCategory, {
+    foreignKey: "categoryId",
+    as: "category",
+  });
+
   //--------------------------
   // USER ↔ COURSE
   //--------------------------
@@ -41,7 +48,7 @@ export function setupAssociations() {
     as: "batches",
   });
 
-   /* CITY → COLLEGE */
+  /* CITY → COLLEGE */
   City.hasMany(College, { foreignKey: "cityId", as: "colleges" });
   College.belongsTo(City, { foreignKey: "cityId", as: "city" });
 
