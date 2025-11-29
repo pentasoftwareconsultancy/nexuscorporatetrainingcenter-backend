@@ -1,11 +1,31 @@
 import express from "express";
 
 import { pagination } from "../../middlewares/pagination.js";
-import { cache, cacheStore } from "../../utils/cache.js"; 
+import { cache, cacheStore } from "../../utils/cache.js";
 import masterController from "../../controllers/master/master.controller.js";
 import { protect } from "../../middlewares/auth.middleware.js";
 
 const router = express.Router();
+
+/* ---------------- COURSE CATEGORY ---------------- */
+
+router.post("/course-category", protect, masterController.createCourseCategory);
+
+router.get("/course-category", masterController.getAllCourseCategories);
+
+router.get("/course-category/:id", masterController.getCourseCategoryById);
+
+router.put(
+  "/course-category/:id",
+  protect,
+  masterController.updateCourseCategory
+);
+
+router.delete(
+  "/course-category/:id",
+  protect,
+  masterController.deleteCourseCategory
+);
 
 /* ---------------- CLEAR COURSE CACHE ---------------- */
 const clearCoursesCache = (req, res, next) => {
