@@ -20,6 +20,14 @@ const User = sequelize.define("User", {
     type: DataTypes.ENUM("admin", "user", "teacher"),
     defaultValue: "user",
   },
+  resetToken: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  resetTokenExpiry: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
 });
 
 export default User;

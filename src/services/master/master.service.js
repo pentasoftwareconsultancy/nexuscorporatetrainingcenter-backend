@@ -1,4 +1,8 @@
-import { Course, Batch } from "../../models/master/master.models.js";
+import {
+  Course,
+  Batch,
+  CourseCategory,
+} from "../../models/master/master.models.js";
 
 const masterService = {
   // ------------------ COURSE CATEGORY ------------------
