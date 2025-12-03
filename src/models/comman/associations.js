@@ -1,5 +1,5 @@
 import User from "../users/user.model.js";
-import { Batch, Course } from "../master/master.models.js";
+import { Batch, Course, CourseCategory } from "../master/master.models.js";
 import { City, College, Media } from "../media/media.models.js";
 import { Event, EventImage } from "../events/event.models.js";
 import {
