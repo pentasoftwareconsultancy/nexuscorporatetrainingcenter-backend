@@ -1,13 +1,37 @@
-import { Op } from "sequelize";
-import Placement from "../../models/comman/placement.model.js";
+import {
+  Placement,
+  PlacementCategory,
+  PlacementDetails,
+} from "../../models/comman/placement.model.js";
+import { Op, Sequelize } from "sequelize";
 
 class PlacementService {
-  /* ---------------- CREATE ---------------- */
+  /* ---------------- CATEGORY ---------------- */
+  async createCategory(data) {
+    return await PlacementCategory.create(data);
+  }
+
+  async getAllCategories() {
+    return await PlacementCategory.findAll();
+  }
+
+  async updateCategory(id, data) {
+    return await PlacementCategory.update(data, {
+      where: { placementCategoryId: id },
+    });
+  }
+
+  async deleteCategory(id) {
+    return await PlacementCategory.destroy({
+      where: { placementCategoryId: id },
+    });
+  }
+
+  /* ---------------- PLACEMENTS ---------------- */
   async createPlacement(data) {
     return await Placement.create(data);
   }
 
-  /* ---------------- GET ALL ---------------- */
   async getAllPlacements(search, limit, offset) {
     const where = {};
 
@@ -15,91 +39,83 @@ class PlacementService {
       where.student_name = { [Op.like]: `%${search}%` };
     }
 
-    const { rows, count } = await Placement.findAndCountAll({
+    const result = await Placement.findAndCountAll({
       where,
       limit,
       offset,
       order: [["createdAt", "DESC"]],
+      include: [{ model: PlacementCategory }],
     });
 
-    return { total: count, data: rows };
+    return { total: result.count, data: result.rows };
   }
 
-  /* ---------------- GET BY ID ---------------- */
   async getPlacementById(id) {
-    return await Placement.findByPk(id);
+    return await Placement.findByPk(id, {
+      include: [
+        { model: PlacementCategory },
+        { model: PlacementDetails },
+      ],
+    });
   }
 
-  /* ---------------- UPDATE ---------------- */
   async updatePlacement(id, data) {
-    return await Placement.update(data, { where: { placement_id: id } });
+    return await Placement.update(data, {
+      where: { placement_id: id },
+    });
   }
 
-  /* ---------------- DELETE ---------------- */
   async deletePlacement(id) {
     return await Placement.destroy({ where: { placement_id: id } });
   }
 
-  /* ---------------- BASIC LIST (With Filters + Pagination) ---------------- */
-  async getBasicPlacementList(query, limit, offset) {
-    const where = {};
-
-    if (query.course) where.course_name = query.course;
-    if (query.company) where.placed_in_company = query.company;
-
-    if (query.search) {
-      where.student_name = { [Op.like]: `%${query.search}%` };
-    }
-
-    const { rows, count } = await Placement.findAndCountAll({
-      attributes: [
-        "student_name",
-        "email",
-        "course_name",
-        "placed_in_company"
-      ],
-      where,
-      limit,
-      offset,
-      order: [["createdAt", "DESC"]],
-    });
-
-    return { total: count, data: rows };
+  /* ---------------- DETAILS (1:1) ---------------- */
+  async createPlacementDetails(data) {
+    return await PlacementDetails.create(data);
   }
 
-  /* ---------------- MINIMAL LIST ---------------- */
-  async getMinimalPlacements(search) {
-    const where = {};
-
-    if (search) {
-      where.student_name = { [Op.like]: `%${search}%` };
-    }
-
-    return await Placement.findAll({
-      attributes: ["student_name", "placed_in_company"],
-      where,
-      order: [["createdAt", "DESC"]],
-    });
-  }
-
-  /* ---------------- STATS ---------------- */
-  async getPlacementStats() {
-    const total = await Placement.count();
-
-    const courses = await Placement.findAll({
-      attributes: ["course_name"],
-    });
-
-    const companies = await Placement.findAll({
-      attributes: ["placed_in_company"],
-    });
-
-    return {
-      totalPlacements: total,
-      courses: courses.length,
-      companies: companies.length,
-    };
-  }
+  async getAllPlacementDetails() {
+  return await PlacementDetails.findAll({
+    include: [
+      {
+        model: Placement,
+        as: "placement"  // 👈 MUST MATCH association alias
+      }
+    ],
+  });
 }
 
+ async getPlacementDetails(placementId) {
+  return await PlacementDetails.findOne({
+    where: { placement_id: placementId },
+    include: [
+      {
+        model: Placement,
+        as: "placement"  // 👈 SAME alias
+      }
+    ]
+  });
+}
+
+  async updatePlacementDetails(id, data) {
+    return await PlacementDetails.update(data, {
+      where: { placementDetails_id: id },
+    });
+  }
+
+ 
+
+
+  /* ---------------- YEAR-WISE REPORT ---------------- */
+ async getYearWisePlacement() {
+  return await Placement.findAll({
+    attributes: [
+      [Sequelize.fn("YEAR", Sequelize.col("Placement.createdAt")), "year"],
+      [Sequelize.fn("COUNT", Sequelize.col("Placement.placement_id")), "total"],
+    ],
+    group: [Sequelize.fn("YEAR", Sequelize.col("Placement.createdAt"))],
+    order: [[Sequelize.literal("year"), "DESC"]],
+  });
+}
+}
 export default new PlacementService();

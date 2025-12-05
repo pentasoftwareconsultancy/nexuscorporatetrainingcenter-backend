@@ -1,86 +1,46 @@
 import express from "express";
-
 import {
+  createCategory,
+  getAllCategories,
+  updateCategory,
+  deleteCategory,
   createPlacement,
   getAllPlacements,
-  getBasicPlacements,
-  getMinimalPlacements,
-  getPlacementStats,
   getPlacementById,
   updatePlacement,
-  deletePlacement
+  deletePlacement,
+  createPlacementDetails,
+  updatePlacementDetails,
+  getPlacementDetails,
+  getPlacementYearWise,
+  getAllPlacementDetails,
 } from "../../controllers/comman/placement.controller.js";
 
 import { pagination } from "../../middlewares/pagination.js";
-import { cache, cacheStore } from "../../utils/cache.js";
 import { protect } from "../../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-/* ------------ CLEAR PLACEMENT CACHE ------------ */
-const clearPlacementCache = (req, res, next) => {
-  cacheStore.del("placements_all");
-  cacheStore.del("placements_basic");
-  cacheStore.del("placements_minimal");
-  cacheStore.del("placements_stats");
-  next();
-};
+/* ---------------- CATEGORY ---------------- */
+router.post("/category", protect, createCategory); //done
+router.get("/category", getAllCategories); //done
+router.put("/category/:id", protect, updateCategory); //done
+router.delete("/category/:id", protect, deleteCategory); //done
 
-/* ------------ CREATE ------------ */
-router.post(
-  "/",
-  protect,
-  clearPlacementCache,
-  createPlacement
-);
+/* ---------------- PLACEMENTS ---------------- */
+router.post("/", protect, createPlacement); //done
+router.get("/", pagination, getAllPlacements); //done
+router.get("/:id", getPlacementById); //done
+router.put("/:id", protect, updatePlacement); //done
+router.delete("/:id", protect, deletePlacement); //done
 
-/* ------------ GET (ALL + PAGINATION) ------------ */
-router.get(
-  "/",
-  pagination,
-  cache("placements_all"),
-  getAllPlacements
-);
+/* ---------------- DETAILS ---------------- */
+router.get("/details/all", getAllPlacementDetails); 
+router.get("/details/:id", getPlacementDetails); //done
+router.post("/details", protect, createPlacementDetails); //done
+router.put("/details/:id", protect, updatePlacementDetails); //done
 
-/* ------------ BASIC LIST ------------ */
-router.get(
-  "/basic",
-  pagination,
-  cache("placements_basic"),
-  getBasicPlacements
-);
-
-/* ------------ MINIMAL LIST (NAME + COMPANY ONLY) ------------ */
-router.get(
-  "/minimal",
-  cache("placements_minimal"),
-  getMinimalPlacements
-);
-
-/* ------------ STATS (COUNTS) ------------ */
-router.get(
-  "/stats",
-  cache("placements_stats"),
-  getPlacementStats
-);
-
-/* ------------ GET BY ID ------------ */
-router.get("/:id", getPlacementById);
-
-/* ------------ UPDATE ------------ */
-router.put(
-  "/:id",
-  protect,
-  clearPlacementCache,
-  updatePlacement
-);
-
-/* ------------ DELETE ------------ */
-router.delete(
-  "/:id",
-  protect,
-  clearPlacementCache,
-  deletePlacement
-);
+/* ---------------- YEAR-WISE ---------------- */
+router.get("/reports/year-wise", getPlacementYearWise); //done
 
 export default router;
