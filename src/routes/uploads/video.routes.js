@@ -1,27 +1,32 @@
 import express from "express";
 import multer from "multer";
-import {
-  createVideo,
-  getAllVideos,
-  updateVideo,
-  deleteVideo
-} from "../../controllers/uploads/video.controller.js";
+import { protect } from "../../middlewares/auth.middleware.js";
+import videoController from "../../controllers/uploads/video.controller.js";
 
 const router = express.Router();
+const upload = multer({ dest: "uploads/" });
 
-const storage = multer.diskStorage({
-  destination: "uploads/videos",
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
+/* ===================== VIDEOS ===================== */
 
-const upload = multer({ storage });
+// CREATE VIDEO
+router.post(
+  "/video",
+  upload.single("file"),  // must match Postman key
+  videoController.createVideo
+);
 
-// Routes
-router.post("/", upload.single("photo"), createVideo);     // CREATE
-router.get("/", getAllVideos);                             // GET ALL
-router.put("/:id", upload.single("photo"), updateVideo);   // UPDATE
-router.delete("/:id", deleteVideo);                        // DELETE
+// GET ALL VIDEOS
+router.get("/video", videoController.getAllVideos);
+
+// UPDATE VIDEO
+router.put(
+  "/video/:id",
+  protect,
+  upload.single("file"),
+  videoController.updateVideo
+);
+
+// DELETE VIDEO
+router.delete("/video/:id", protect, videoController.deleteVideo);
 
 export default router;

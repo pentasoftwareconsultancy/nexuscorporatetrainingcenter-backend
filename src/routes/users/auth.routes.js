@@ -15,7 +15,7 @@ import { pagination } from "../../middlewares/pagination.js";
 
 const router = express.Router();
 
-router.post("/register", register);
+router.post("/signup", register);
 router.post("/login", login);
 router.post("/forgot-password", forgotPassword);       // Step 1
 router.post("/forgot-password/verify", verifyRecoveryAnswer); // Step 2
