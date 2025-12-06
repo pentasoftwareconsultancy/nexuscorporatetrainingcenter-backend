@@ -13,7 +13,7 @@ export const register = async (req, res) => {
       passwordRecoveryAnswer
     } = req.body;
 
-    // ✅ Check confirm password
+    
     if (password !== confirmPassword) {
       return res.status(400).json({ message: "Passwords do not match" });
     }
