@@ -82,16 +82,24 @@ export function setupAssociations() {
   Option.belongsTo(Question, { foreignKey: "questionId", as: "question" });
 
   // USER → USER TEST
-  User.hasMany(UserTest, { foreignKey: "userId" });
-  UserTest.belongsTo(User, { foreignKey: "userId" });
+  UserTest.hasMany(UserAnswer, { foreignKey: "userTestId", as: "answers" });
+  UserAnswer.belongsTo(UserTest, { foreignKey: "userTestId" });
 
   // TEST → USER TEST
   Test.hasMany(UserTest, { foreignKey: "testId" });
   UserTest.belongsTo(Test, { foreignKey: "testId" });
 
   // USER TEST → USER ANSWER
-  UserTest.hasMany(UserAnswer, { foreignKey: "userTestId", as: "answers" });
-  UserAnswer.belongsTo(UserTest, { foreignKey: "userTestId" });
+  // USERTEST → USERANSWER
+  UserTest.hasMany(UserAnswer, {
+    foreignKey: "userTestId",
+    as: "userAnswers", //  CHANGE alias
+  });
+
+  UserAnswer.belongsTo(UserTest, {
+    foreignKey: "userTestId",
+    as: "userTest",
+  });
 
   // QUESTION → USER ANSWER
   Question.hasMany(UserAnswer, { foreignKey: "questionId" });
