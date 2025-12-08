@@ -53,14 +53,55 @@ class TestService {
     return test;
   }
 
+  async updateTest(id, body) {
+    const test = await Test.findByPk(id);
+    if (!test) throw new Error("Test not found");
+    
+    await test.update(body);
+    return test;
+  }
+  
+  async deleteTest(id) {
+    const test = await Test.findByPk(id);
+    if (!test) throw new Error("Test not found");
+  
+    await test.destroy();
+    return { deleted: true };
+  }
+
   // -------------------- QUESTION --------------------
   async createQuestion(body) {
     return await Question.create(body);
   }
 
+  async getQuestion(id) {
+    const question = await Question.findByPk(id, {
+      include: [{ model: Option, as: "options" }],
+    });
+
+    if (!question) throw new Error("Question not found");
+    return question;
+  }
+
   // -------------------- OPTIONS --------------------
   async addOption(body) {
+    const { questionId } = body;
+    
+    // 1️⃣ Count existing options for this question
+    const count = await Option.count({ where: { questionId } });
+    
+    if (count >= 4) {
+      throw new Error("Cannot add more than 4 options for a question");
+    }
+  
+    // 2️⃣ Create the new option
     return await Option.create(body);
+  }
+
+  async getOption(id) {
+    const option = await Option.findByPk(id);
+    if (!option) throw new Error("Option not found");
+    return option;
   }
 
   // -------------------- SUBMIT TEST --------------------

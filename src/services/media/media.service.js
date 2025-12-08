@@ -1,71 +1,107 @@
-import { Gallery, Media } from "../../models/media/media.models.js";
 import cloudinary from "../../config/cloudinary.js";
+import { City, College, Media } from "../../models/media/media.models.js";
 
 class MediaService {
-  // ------------------- GALLERY -------------------
-  async createGallery(body) {
-    const gallery = await Gallery.create(body);
-    return gallery.toJSON(); // safe JSON
+  /* ========== CITY ========== */
+  async createCity(body) {
+    return await City.create(body);
   }
 
-  async getAllGalleries() {
-    const galleries = await Gallery.findAll({
-      include: [
-        {
-          model: Media,
-          as: "media",
-        },
-      ],
+  async getCities() {
+    return await City.findAll({
+      include: [{ model: College, as: "colleges" }],
       order: [["id", "DESC"]],
     });
-
-    // CRASH FIX: convert Sequelize models to JSON
-    return galleries.map((g) => g.toJSON());
   }
 
-  async getGalleryById(id) {
-    const gallery = await Gallery.findByPk(id, {
-      include: [
-        {
-          model: Media,
-          as: "media",
-        },
-      ],
-    });
-
-    if (!gallery) throw new Error("Gallery not found");
-
-    return gallery.toJSON();
+  /* ========== COLLEGE ========== */
+  async createCollege(body) {
+    return await College.create(body);
   }
 
-  // ------------------- MEDIA UPLOAD -------------------
-  async uploadMedia(file, body) {
-    if (!file) throw new Error("File is required");
+  async getCollegesByCity(cityId) {
+    return await College.findAll({
+      where: { cityId },
+      include: [{ model: Media, as: "images" }],
+    });
+  }
 
-    // Upload to Cloudinary
-    const uploaded = await cloudinary.uploader.upload(file.path, {
-      folder: "nexus_media",
-      resource_type: "auto",
+  /* ========== MEDIA / IMAGES ========== */
+  async uploadImage(collegeId, filePath, caption) {
+    const uploaded = await cloudinary.uploader.upload(filePath, {
+      folder: "nexus/colleges",
     });
 
-    const media = await Media.create({
+    return await Media.create({
       url: uploaded.secure_url,
-      type: body.type || "image",
-      caption: body.caption || null,
-      galleryId: body.galleryId,
+      caption,
+      collegeId,
     });
-
-    return media.toJSON();
   }
 
-  // ------------------- DELETE MEDIA -------------------
+  async getImagesByCollege(collegeId) {
+    return await Media.findAll({
+      where: { collegeId },
+      order: [["id", "DESC"]],
+    });
+  }
+
+  /* ===================== CITY ===================== */
+
+  async updateCity(id, body) {
+    const city = await City.findByPk(id);
+    if (!city) throw new Error("City not found");
+
+    await city.update(body);
+    return city;
+  }
+
+  async deleteCity(id) {
+    const city = await City.findByPk(id);
+    if (!city) throw new Error("City not found");
+
+    await city.destroy();
+    return { message: "City deleted successfully" };
+  }
+
+  /* ===================== COLLEGE ===================== */
+
+  async updateCollege(id, body) {
+    const college = await College.findByPk(id);
+    if (!college) throw new Error("College not found");
+
+    await college.update(body);
+    return college;
+  }
+
+  async deleteCollege(id) {
+    const college = await College.findByPk(id);
+    if (!college) throw new Error("College not found");
+
+    await college.destroy();
+    return { message: "College deleted successfully" };
+  }
+
+  /* ===================== MEDIA (IMAGE) ===================== */
+
+  async updateMedia(id, body) {
+    const media = await Media.findByPk(id);
+    if (!media) throw new Error("Media not found");
+
+    await media.update({
+      caption: body.caption ?? media.caption,
+      url: body.url ?? media.url, // Optional, only update if provided
+      collegeId: body.collegeId ?? media.collegeId,
+    });
+
+    return media;
+  }
+
   async deleteMedia(id) {
     const media = await Media.findByPk(id);
-
     if (!media) throw new Error("Media not found");
 
     await media.destroy();
-
     return { message: "Media deleted successfully" };
   }
 }

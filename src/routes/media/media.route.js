@@ -1,23 +1,38 @@
 import express from "express";
 import multer from "multer";
-import { protect } from "../../middlewares/auth.middleware.js";
 import mediaController from "../../controllers/media/media.controller.js";
+import { protect } from "../../middlewares/auth.middleware.js";
 
 const router = express.Router();
 const upload = multer({ dest: "uploads/" });
 
-// GALLERY
-router.post("/gallery", protect, mediaController.createGallery);
-router.get("/gallery", mediaController.getAllGalleries);
-router.get("/gallery/:id", mediaController.getGalleryById);
+/* CITY */
+router.post("/city", mediaController.createCity);
+router.get("/city", mediaController.getCities);
 
-// MEDIA
+/* COLLEGE */
+router.post("/college", mediaController.createCollege);
+router.get("/college/:cityId", mediaController.getCollegesByCity);
+
+/* IMAGES */
 router.post(
-  "/upload",
-  protect,
-  upload.single("file"),
-  mediaController.uploadMedia
+  "/image/upload",
+  upload.single("file"), // MUST match Postman key
+  mediaController.uploadImage
 );
-router.delete("/:id", protect, mediaController.deleteMedia);
+
+router.get("/image/:collegeId", mediaController.getImagesByCollege);
+
+/* ===================== CITY ===================== */
+router.put("/city/:id", protect, mediaController.updateCity);
+router.delete("/city/:id", protect, mediaController.deleteCity);
+
+/* ===================== COLLEGE ===================== */
+router.put("/college/:id", protect, mediaController.updateCollege);
+router.delete("/college/:id", protect, mediaController.deleteCollege);
+
+/* ===================== MEDIA ===================== */
+router.put("/media/:id", protect, mediaController.updateMedia);
+router.delete("/media/:id", protect, mediaController.deleteMedia);
 
 export default router;

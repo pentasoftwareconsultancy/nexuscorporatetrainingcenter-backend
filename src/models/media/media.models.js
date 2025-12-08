@@ -1,28 +1,25 @@
-import { DataTypes as D2 } from "sequelize";
-import { sequelize as _sequelize } from "../../config/db.js";
+import { DataTypes } from "sequelize";
+import { sequelize } from "../../config/db.js";
 
-export const Gallery = _sequelize.define("Gallery", {
-  id: {
-    type: D2.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  title: { type: D2.STRING },
+
+/* ================= CITY ================= */
+export const City = sequelize.define("City", {
+  id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+  name: { type: DataTypes.STRING, allowNull: false },
 });
 
-export const Media = _sequelize.define("Media", {
-  id: {
-    type: D2.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  url: { type: D2.STRING, allowNull: false },
-  type: { type: D2.ENUM("image", "video"), defaultValue: "image" },
-  caption: { type: D2.STRING },
+/* ================= COLLEGE ================= */
 
-  // FK will be added in associations.js
-  galleryId: {
-    type: D2.INTEGER,
-    allowNull: true,
-  },
+export const College = sequelize.define("College", {
+  id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+  name: { type: DataTypes.STRING, allowNull: false },
+  cityId: { type: DataTypes.INTEGER, allowNull: false },
+});
+
+/* ================= MEDIA (IMAGES) ================= */
+export const Media = sequelize.define("Media", {
+  id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+  url: { type: DataTypes.STRING, allowNull: false },
+  caption: { type: DataTypes.STRING },
+  collegeId: { type: DataTypes.INTEGER, allowNull: false },
 });

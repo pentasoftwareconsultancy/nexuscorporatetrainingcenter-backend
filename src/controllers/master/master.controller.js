@@ -1,6 +1,54 @@
 import masterService from "../../services/master/master.service.js";
 
 const masterController = {
+  createCourseCategory: async (req, res) => {
+    try {
+      const data = await masterService.createCourseCategory(req.body);
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  getAllCourseCategories: async (req, res) => {
+    try {
+      const data = await masterService.getAllCourseCategories();
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  getCourseCategoryById: async (req, res) => {
+    try {
+      const data = await masterService.getCourseCategoryById(req.params.id);
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(404).json({ success: false, message: err.message });
+    }
+  },
+
+  updateCourseCategory: async (req, res) => {
+    try {
+      const data = await masterService.updateCourseCategory(
+        req.params.id,
+        req.body
+      );
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  deleteCourseCategory: async (req, res) => {
+    try {
+      await masterService.deleteCourseCategory(req.params.id);
+      res.json({ success: true, message: "Category deleted" });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
   // =============================== COURSES ===============================
   createCourse: async (req, res) => {
     try {
@@ -49,8 +97,10 @@ const masterController = {
 
   // =============================== BATCHES ===============================
   createBatch: async (req, res) => {
+    console.log("BODY RECEIVED:", req.body); // <-- ADD THIS
     try {
       const data = await masterService.createBatch(req.body);
+
       res.json({ success: true, data });
     } catch (error) {
       res.status(400).json({ success: false, message: error.message });

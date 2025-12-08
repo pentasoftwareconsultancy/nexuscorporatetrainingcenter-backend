@@ -37,6 +37,25 @@ const testController = {
     }
   },
 
+  updateTest: async (req, res) => {
+    try {
+      const id = req.params.id;
+      const data = await testService.updateTest(id, req.body);
+      res.json({ success: true, data });
+    } catch (e) {
+      res.status(400).json({ success: false, message: e.message });
+    }
+  },
+  
+  deleteTest: async (req, res) => {
+    try {
+      const id = req.params.id;
+      const result = await testService.deleteTest(id);
+      res.json({ success: true, message: "Test deleted successfully", result });
+    } catch (e) {
+      res.status(400).json({ success: false, message: e.message });
+    }
+  },
   
   getTestById: async (req, res) => {
     try {
@@ -56,12 +75,30 @@ const testController = {
     }
   },
 
+  getQuestion: async (req, res) => {
+    try {
+      const data = await testService.getQuestion(req.params.id);
+      res.json({ success: true, data });
+    } catch (e) {
+      res.status(404).json({ success: false, message: e.message });
+    }
+  },
+
   addOption: async (req, res) => {
     try {
       const data = await testService.addOption(req.body);
       res.json({ success: true, data });
     } catch (e) {
       res.status(400).json({ success: false, message: e.message });
+    }
+  },
+
+  getOption: async (req, res) => {
+    try {
+      const data = await testService.getOption(req.params.id);
+      res.json({ success: true, data });
+    } catch (e) {
+      res.status(404).json({ success: false, message: e.message });
     }
   },
 
