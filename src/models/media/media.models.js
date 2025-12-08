@@ -1,6 +1,7 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../config/db.js";
 
+
 /* ================= CITY ================= */
 export const City = sequelize.define("City", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
@@ -8,6 +9,7 @@ export const City = sequelize.define("City", {
 });
 
 /* ================= COLLEGE ================= */
+
 export const College = sequelize.define("College", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
   name: { type: DataTypes.STRING, allowNull: false },

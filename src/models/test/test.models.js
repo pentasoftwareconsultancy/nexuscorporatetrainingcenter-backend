@@ -10,7 +10,7 @@ export const Test = sequelize.define("Test", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
   title: { type: DataTypes.STRING, allowNull: false },
   total_questions: { type: DataTypes.INTEGER, defaultValue: 0 },
-  duration: { type: DataTypes.INTEGER }, 
+  status: { type: DataTypes.BOOLEAN, defaultValue: false }, 
 });
 
 export const Question = sequelize.define("Question", {

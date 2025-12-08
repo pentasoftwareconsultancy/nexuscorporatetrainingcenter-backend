@@ -1,6 +1,37 @@
-import { Course, Batch } from "../../models/master/master.models.js";
+import {
+  Course,
+  Batch,
+  CourseCategory,
+} from "../../models/master/master.models.js";
 
 const masterService = {
+  // ------------------ COURSE CATEGORY ------------------
+  createCourseCategory: async (body) => {
+    return await CourseCategory.create(body);
+  },
+
+  getAllCourseCategories: async () => {
+    return await CourseCategory.findAll();
+  },
+
+  getCourseCategoryById: async (id) => {
+    const cat = await CourseCategory.findByPk(id);
+    if (!cat) throw new Error("Category not found");
+    return cat;
+  },
+
+  updateCourseCategory: async (id, body) => {
+    const cat = await CourseCategory.findByPk(id);
+    if (!cat) throw new Error("Category not found");
+    return await cat.update(body);
+  },
+
+  deleteCourseCategory: async (id) => {
+    const cat = await CourseCategory.findByPk(id);
+    if (!cat) throw new Error("Category not found");
+    return await cat.destroy();
+  },
+
   // =============================== COURSES ===============================
   createCourse: async (body, userId) => {
     return await Course.create({ ...body, createdBy: userId });
