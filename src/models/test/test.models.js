@@ -10,7 +10,7 @@ export const Test = sequelize.define("Test", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
   title: { type: DataTypes.STRING, allowNull: false },
   total_questions: { type: DataTypes.INTEGER, defaultValue: 0 },
-  status: { type: DataTypes.BOOLEAN, defaultValue: false }, 
+  status: { type: DataTypes.BOOLEAN, defaultValue: false },
 });
 
 export const Question = sequelize.define("Question", {
@@ -26,6 +26,7 @@ export const Option = sequelize.define("Option", {
 
 export const UserTest = sequelize.define("UserTest", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+  attempt_number: { type: DataTypes.INTEGER, defaultValue: 1 },
   total_questions: { type: DataTypes.INTEGER },
   attempted: { type: DataTypes.INTEGER },
   correct_answers: { type: DataTypes.INTEGER },
@@ -36,13 +37,9 @@ export const UserAnswer = sequelize.define("UserAnswer", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
 
   optionId: {
-    
     type: DataTypes.INTEGER,
     allowNull: false,
   },
 
-  is_correct: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-  },
+  is_correct: { type: DataTypes.BOOLEAN, defaultValue: false },
 });
