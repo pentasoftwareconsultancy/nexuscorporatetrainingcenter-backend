@@ -33,6 +33,6 @@ app.use("/api/uploads", uploadRoutes);
 
 app.get("/api/user/profile", protect, (req, res) => {
   res.json({ message: "Welcome to your profile!", userId: req.user.id });
-});
+}); 
 
 export default app;
