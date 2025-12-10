@@ -11,7 +11,7 @@ import uploadRoutes from "./routes/uploads/video.routes.js";
 
 const app = express();
 
-// ✅ Add CORS middleware BEFORE routes
+
 app.use(cors({
   origin: "http://localhost:5173", // your React frontend URL
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
