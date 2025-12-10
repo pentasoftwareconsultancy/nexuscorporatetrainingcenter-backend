@@ -8,16 +8,15 @@ import {
 } from "../../models/test/test.models.js";
 
 class TestService {
-  // -------------------- CATEGORY --------------------
+  // CATEGORY
   async createCategory(body) {
     return await TestCategory.create(body);
   }
-
   async getCategories() {
     return await TestCategory.findAll();
   }
 
-  // -------------------- TEST --------------------
+  // TEST
   async createTest(body) {
     return await Test.create(body);
   }
@@ -31,13 +30,11 @@ class TestService {
   async getTestById(id) {
     const test = await Test.findByPk(id, {
       attributes: ["id", "title"],
-
       include: [
         {
           model: Question,
           as: "questions",
           attributes: ["id", "question_text"],
-
           include: [
             {
               model: Option,
@@ -56,20 +53,20 @@ class TestService {
   async updateTest(id, body) {
     const test = await Test.findByPk(id);
     if (!test) throw new Error("Test not found");
-    
+
     await test.update(body);
     return test;
   }
-  
+
   async deleteTest(id) {
     const test = await Test.findByPk(id);
     if (!test) throw new Error("Test not found");
-  
+
     await test.destroy();
     return { deleted: true };
   }
 
-  // -------------------- QUESTION --------------------
+  // QUESTION
   async createQuestion(body) {
     return await Question.create(body);
   }
@@ -78,23 +75,18 @@ class TestService {
     const question = await Question.findByPk(id, {
       include: [{ model: Option, as: "options" }],
     });
-
     if (!question) throw new Error("Question not found");
     return question;
   }
 
-  // -------------------- OPTIONS --------------------
+  // OPTION
   async addOption(body) {
     const { questionId } = body;
-    
-    // 1️⃣ Count existing options for this question
     const count = await Option.count({ where: { questionId } });
-    
+
     if (count >= 4) {
-      throw new Error("Cannot add more than 4 options for a question");
+      throw new Error("Cannot add more than 4 options");
     }
-  
-    // 2️⃣ Create the new option
     return await Option.create(body);
   }
 
@@ -104,28 +96,37 @@ class TestService {
     return option;
   }
 
-  // -------------------- SUBMIT TEST --------------------
+  // SUBMIT TEST WITH ATTEMPT_NUMBER + UPDATE ANSWER SUPPORT
   async submitTest(userId, body) {
-    const { testId, answers } = body;
-
+    const { testId, answers, title } = body;
     let correct = 0;
 
-    // STEP 1: Create UserTest FIRST
+    // 1️⃣ Find last attempt
+    const lastAttempt = await UserTest.findOne({
+      where: { userId, testId },
+      order: [["attempt_number", "DESC"]],
+    });
+
+    const attempt_number = lastAttempt ? lastAttempt.attempt_number + 1 : 1;
+
+    // 2️⃣ Create new test attempt
     const userTest = await UserTest.create({
       userId,
       testId,
+      attempt_number,
+      title,
       total_questions: answers.length,
       attempted: answers.length,
       correct_answers: 0,
       score: 0,
     });
 
-    // STEP 2: LOOP all answers
+    // 3️⃣ Process answers
     for (const ans of answers) {
       const option = await Option.findByPk(ans.optionId);
       const isCorrect = option?.is_correct === true;
 
-      // 🔍 STEP 3: Check if answer exists
+      // Check if answer exists for THIS attempt
       let existing = await UserAnswer.findOne({
         where: {
           userTestId: userTest.id,
@@ -134,13 +135,11 @@ class TestService {
       });
 
       if (existing) {
-        // ✏️ UPDATE previous answer
         await existing.update({
           optionId: ans.optionId,
           is_correct: isCorrect,
         });
       } else {
-        // ➕ CREATE new answer
         await UserAnswer.create({
           userTestId: userTest.id,
           questionId: ans.questionId,
@@ -152,15 +151,20 @@ class TestService {
       if (isCorrect) correct++;
     }
 
-    // STEP 4: Update final score
-    const finalScore = (correct / answers.length) * 100;
-
+    // 4️⃣ Final score
     await userTest.update({
       correct_answers: correct,
-      score: finalScore,
+      score: (correct / answers.length) * 100,
     });
 
     return userTest;
+  }
+
+  async getLatestAttempt(userId, testId) {
+    return await UserTest.findOne({
+      where: { userId, testId },
+      order: [["attempt_number", "DESC"]], // or id DESC
+    });
   }
 }
 

@@ -39,30 +39,28 @@ const testController = {
 
   updateTest: async (req, res) => {
     try {
-      const id = req.params.id;
-      const data = await testService.updateTest(id, req.body);
+      const data = await testService.updateTest(req.params.id, req.body);
       res.json({ success: true, data });
     } catch (e) {
       res.status(400).json({ success: false, message: e.message });
     }
   },
-  
+
   deleteTest: async (req, res) => {
     try {
-      const id = req.params.id;
-      const result = await testService.deleteTest(id);
-      res.json({ success: true, message: "Test deleted successfully", result });
+      const data = await testService.deleteTest(req.params.id);
+      res.json({ success: true, data });
     } catch (e) {
       res.status(400).json({ success: false, message: e.message });
     }
   },
-  
+
   getTestById: async (req, res) => {
     try {
       const data = await testService.getTestById(req.params.id);
       res.json({ success: true, data });
     } catch (e) {
-      res.status(404).json({ success: false, message: e.message });
+      res.status(400).json({ success: false, message: e.message });
     }
   },
 
@@ -80,7 +78,7 @@ const testController = {
       const data = await testService.getQuestion(req.params.id);
       res.json({ success: true, data });
     } catch (e) {
-      res.status(404).json({ success: false, message: e.message });
+      res.status(400).json({ success: false, message: e.message });
     }
   },
 
@@ -93,18 +91,30 @@ const testController = {
     }
   },
 
-  getOption: async (req, res) => {
-    try {
-      const data = await testService.getOption(req.params.id);
-      res.json({ success: true, data });
-    } catch (e) {
-      res.status(404).json({ success: false, message: e.message });
-    }
-  },
-
   submitTest: async (req, res) => {
     try {
       const data = await testService.submitTest(req.user.id, req.body);
+      res.json({ success: true, data });
+    } catch (e) {
+      res.status(400).json({ success: false, message: e.message });
+    }
+  },
+
+  getLatestAttempt: async (req, res) => {
+    try {
+      const { testId } = req.params; // /latest/:testId
+      console.log("testId:", testId);
+      const userId = req.user.id;
+      console.log("userId:", userId);
+
+      const data = await testService.getLatestAttempt(userId, testId);
+
+      if (!data) {
+        return res
+          .status(404)
+          .json({ success: false, message: "No attempts found" });
+      }
+
       res.json({ success: true, data });
     } catch (e) {
       res.status(400).json({ success: false, message: e.message });
