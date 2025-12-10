@@ -19,13 +19,13 @@ router.delete("/:id", protect, testController.deleteTest);
 router.post("/question", protect, testController.createQuestion);
 router.get("/question/:id", testController.getQuestion);
 
-// OPTIONS
+// OPTION
 router.post("/option", protect, testController.addOption);
-router.get("/option/:id", testController.getOption);
 
 // SUBMIT TEST
 router.post("/submit", protect, testController.submitTest);
 
-// router.get("/tests/:id", testController.getTestById);
+// GET latest attempt for a test
+router.get("/latest/:testId", protect, testController.getLatestAttempt);
 
 export default router;
