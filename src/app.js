@@ -9,8 +9,16 @@ import eventRoutes from "./routes/events/event.route.js";
 import testRoutes from "./routes/test/test.route.js";
 import uploadRoutes from "./routes/uploads/video.routes.js";
 import placementRoutes from "./routes/comman/placement.routes.js";
+<<<<<<< HEAD
+=======
+import facultyRoutes from "./routes/faculty/faculty.routes.js";
+>>>>>>> 41cd4f59f322d712ceed4b9a41f077673f66588f
 
 const app = express();
+
+// Body parsers
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // ✅ Add CORS middleware BEFORE routes
 app.use(cors({
@@ -20,9 +28,6 @@ app.use(cors({
   credentials: true, // only if you use cookies
 }));
 
-// Body parsers
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -32,6 +37,8 @@ app.use("/api/events", eventRoutes);
 app.use("/api/tests", testRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/placement", placementRoutes);
+app.use("/api/placements", placementRoutes);
+app.use("/api/faculty", facultyRoutes);
 
 app.get("/api/user/profile", protect, (req, res) => {
   res.json({ message: "Welcome to your profile!", userId: req.user.id });
