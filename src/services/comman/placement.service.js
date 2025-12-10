@@ -1,3 +1,5 @@
+import cloudinary from "../../config/cloudinary.js";
+
 import {
   Placement,
   PlacementCategory,
@@ -28,10 +30,35 @@ class PlacementService {
   }
 
   /* ---------------- PLACEMENTS ---------------- */
-  async createPlacement(data) {
-    return await Placement.create(data);
-  }
 
+
+
+
+  /* ================= CREATE PLACEMENT ================= */
+  async createPlacement(data, filePath) {
+    let uploadedImage = null;
+
+    if (filePath) {
+      uploadedImage = await cloudinary.uploader.upload(filePath, {
+        folder: "nexus/placements",
+      });
+    }
+
+    return await Placement.create({
+      placementCategoryId: data.placementCategoryId,
+      student_name: data.student_name,
+      company_name: data.company_name,
+      company_role: data.company_role,
+      course: data.course,
+      year: data.year,
+      package: data.package,
+      image: uploadedImage?.secure_url || null,
+      cloudinaryId: uploadedImage?.public_id || null,
+    });
+  }
+  
+
+  /* ================= GET ALL ================= */
   async getAllPlacements(search, limit, offset) {
     const where = {};
 
@@ -50,24 +77,64 @@ class PlacementService {
     return { total: result.count, data: result.rows };
   }
 
+  /* ================= GET BY ID ================= */
   async getPlacementById(id) {
     return await Placement.findByPk(id, {
-      include: [
-        { model: PlacementCategory },
-        { model: PlacementDetails },
-      ],
+      include: [{ model: PlacementCategory }],
     });
   }
 
-  async updatePlacement(id, data) {
-    return await Placement.update(data, {
-      where: { placement_id: id },
+  /* ================= UPDATE ================= */
+  async updatePlacement(id, newData, newFilePath) {
+    const placement = await Placement.findByPk(id);
+    if (!placement) return null;
+
+    let updatedImage = placement.image;
+    let updatedCloudId = placement.cloudinaryId;
+
+    // If uploading new file
+    if (newFilePath) {
+      if (placement.cloudinaryId) {
+        await cloudinary.uploader.destroy(placement.cloudinaryId);
+      }
+
+      const newUploaded = await cloudinary.uploader.upload(newFilePath, {
+        folder: "nexus/placements",
+      });
+
+      updatedImage = newUploaded.secure_url;
+      updatedCloudId = newUploaded.public_id;
+    }
+
+    await placement.update({
+      placementCategoryId: newData.placementCategoryId ?? placement.placementCategoryId,
+      student_name: newData.student_name ?? placement.student_name,
+      company_name: newData.company_name ?? placement.company_name,
+      company_role: newData.company_role ?? placement.company_role,
+      course: newData.course ?? placement.course,
+      year: newData.year ?? placement.year,
+      package: newData.package ?? placement.package,
+      image: updatedImage,
+      cloudinaryId: updatedCloudId,
     });
+
+    return placement;
   }
 
+  /* ================= DELETE ================= */
   async deletePlacement(id) {
-    return await Placement.destroy({ where: { placement_id: id } });
+    const placement = await Placement.findByPk(id);
+    if (!placement) return null;
+
+    if (placement.cloudinaryId) {
+      await cloudinary.uploader.destroy(placement.cloudinaryId);
+    }
+
+    await placement.destroy();
+    return true;
   }
+
+
 
   /* ---------------- DETAILS (1:1) ---------------- */
   async createPlacementDetails(data) {
