@@ -99,6 +99,27 @@ const testController = {
       res.status(400).json({ success: false, message: e.message });
     }
   },
+
+  getLatestAttempt: async (req, res) => {
+    try {
+      const { testId } = req.params; // /latest/:testId
+      console.log("testId:", testId);
+      const userId = req.user.id;
+      console.log("userId:", userId);
+
+      const data = await testService.getLatestAttempt(userId, testId);
+
+      if (!data) {
+        return res
+          .status(404)
+          .json({ success: false, message: "No attempts found" });
+      }
+
+      res.json({ success: true, data });
+    } catch (e) {
+      res.status(400).json({ success: false, message: e.message });
+    }
+  },
 };
 
 export default testController;

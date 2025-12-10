@@ -29,7 +29,7 @@ router.delete("/category/:id", protect, deleteCategory); //done
 
 /* ---------------- PLACEMENTS ---------------- */
 router.post("/", protect, createPlacement); //done
-router.get("/", pagination, getAllPlacements); //done
+router.get("/", getAllPlacements); //done
 router.get("/:id", getPlacementById); //done
 router.put("/:id", protect, updatePlacement); //done
 router.delete("/:id", protect, deletePlacement); //done
