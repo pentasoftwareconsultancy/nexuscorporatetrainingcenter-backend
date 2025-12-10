@@ -25,4 +25,7 @@ router.post("/option", protect, testController.addOption);
 // SUBMIT TEST
 router.post("/submit", protect, testController.submitTest);
 
+// GET latest attempt for a test
+router.get("/latest/:testId", protect, testController.getLatestAttempt);
+
 export default router;

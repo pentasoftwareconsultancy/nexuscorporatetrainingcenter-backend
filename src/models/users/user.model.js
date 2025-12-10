@@ -8,7 +8,7 @@ const User = sequelize.define("User", {
 
   password: { type: DataTypes.STRING, allowNull: false },
 
-  role: { type: DataTypes.ENUM("admin","user","teacher"), defaultValue: "user" },
+  role: { type: DataTypes.ENUM("admin","user"), defaultValue: "user" },
   
 
  passwordRecoveryQuestion: {
