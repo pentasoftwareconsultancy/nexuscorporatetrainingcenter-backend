@@ -1,148 +1,181 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 import User from "../../models/users/user.model.js";
 
-// for register function
-export const signup = async (req, res) => {
+/* REGISTER */
+export const register = async (req, res) => {
   try {
-    const { emailOrPhone, password, role } = req.body;
+    const {
+      emailOrPhone,
+      password,
+      confirmPassword,
+      role,
+      passwordRecoveryQuestion,
+      passwordRecoveryAnswer,
+    } = req.body;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ where: { emailOrPhone } });
-    if (existingUser)
-      return res.status(400).json({ message: "User already exists" });
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedAnswer = await bcrypt.hash(passwordRecoveryAnswer, 12);
 
-    // Create new user
-    const newUser = await User.create({
+    const user = await User.create({
       emailOrPhone,
       password: hashedPassword,
-      role: role || "user",
+      role,
+      passwordRecoveryQuestion,
+      passwordRecoveryAnswer: hashedAnswer,
     });
 
-    res
-      .status(201)
-      .json({ message: "User registered successfully", userId: newUser.id });
+    res.json({ message: "User registered", user });
   } catch (error) {
-    console.error("Signup error:", error);
-
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: "Error registering", error });
   }
 };
 
-// for login function
+/* LOGIN */
 export const login = async (req, res) => {
   try {
     const { emailOrPhone, password } = req.body;
 
-    // Find user by email or phone
     const user = await User.findOne({ where: { emailOrPhone } });
+    if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) return res.status(400).json({ message: "Invalid credentials" });
 
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    // Create JWT token
     const token = jwt.sign(
       { id: user.id, role: user.role },
-      process.env.JWT_SECRET
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
     );
 
-    res.status(200).json({
-      message: "Login Succesfull",
-      token,
-      id: user.id,
-      role: user.role,
-    });
+    res.json({ message: "Login successful", token, user });
   } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: "Error logging in", error });
   }
 };
 
+/* CHANGE PASSWORD - LOGGED IN */
+export const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword, confirmNewPassword } = req.body;
+
+    // 🔥 Confirm password must match
+    if (newPassword !== confirmNewPassword) {
+      return res.status(400).json({ message: "New passwords do not match" });
+    }
+
+    const user = await User.findByPk(req.user.id);
+
+    const match = await bcrypt.compare(oldPassword, user.password);
+    if (!match)
+      return res.status(400).json({ message: "Incorrect old password" });
+
+    const hashed = await bcrypt.hash(newPassword, 12);
+
+    await User.update({ password: hashed }, { where: { id: req.user.id } });
+
+    res.json({ message: "Password changed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error changing password", error });
+  }
+};
+
+/* FORGOT PASSWORD - STEP 1 */
 export const forgotPassword = async (req, res) => {
   try {
-    const { emailOrPhone } = req.body;
+    const user = await User.findOne({
+      where: { emailOrPhone: req.body.emailOrPhone },
+    });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({
+      message: "Recovery question",
+      question: user.passwordRecoveryQuestion,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching question", error });
+  }
+};
+
+/* VERIFY ANSWER - STEP 2 */
+export const verifyRecoveryAnswer = async (req, res) => {
+  try {
+    const { emailOrPhone, answer } = req.body;
 
     const user = await User.findOne({ where: { emailOrPhone } });
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Create token valid for 15 minutes
-    const resetToken = jwt.sign(
-      { id: user.id },
-      process.env.JWT_SECRET,
-      { expiresIn: "15m" }
-    );
+    const match = await bcrypt.compare(answer, user.passwordRecoveryAnswer);
+    if (!match) return res.status(400).json({ message: "Wrong answer" });
 
-    await user.update({
-      resetToken,
-      resetTokenExpiry: new Date(Date.now() + 15 * 60 * 1000),
+    const resetToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+      expiresIn: "10m",
     });
 
-    return res.json({
-      success: true,
-      message: "Reset token generated",
-      resetToken, 
-    });
-
+    res.json({ message: "Verified", resetToken });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error verifying answer", error });
   }
 };
 
-
+/* RESET PASSWORD - STEP 3 */
 export const resetPassword = async (req, res) => {
   try {
-    const { token, newPassword } = req.body;
+    const { resetToken, newPassword, confirmNewPassword } = req.body;
 
-    const user = await User.findOne({ where: { resetToken: token } });
-    if (!user) return res.status(400).json({ message: "Invalid token" });
-
-    if (user.resetTokenExpiry < new Date()) {
-      return res.status(400).json({ message: "Token expired" });
+    if (newPassword !== confirmNewPassword) {
+      return res.status(400).json({ message: "Passwords do not match" });
     }
 
-    const hashed = await bcrypt.hash(newPassword, 10);
+    const decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
 
-    await user.update({
-      password: hashed,
-      resetToken: null,
-      resetTokenExpiry: null,
-    });
+    const hashed = await bcrypt.hash(newPassword, 12);
 
-    return res.json({ success: true, message: "Password reset successful" });
+    await User.update({ password: hashed }, { where: { id: decoded.id } });
 
+    res.json({ message: "Password reset successfully" });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error resetting password", error });
   }
 };
 
-
-export const changePassword = async (req, res) => {
+export const getAllUsers = async (req, res) => {
   try {
-    const { oldPassword, newPassword } = req.body;
+    const { page, limit, offset } = req;
 
-    const user = await User.findByPk(req.user.id);
+    const where = {};
 
-    const isMatch = await bcrypt.compare(oldPassword, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Old password incorrect" });
+    if (req.query.role) {
+      where.role = req.query.role;
+    }
 
-    const hashed = await bcrypt.hash(newPassword, 10);
+    if (req.query.email) {
+      where.emailOrPhone = req.query.email;
+    }
 
-    await user.update({ password: hashed });
+    const users = await User.findAndCountAll({
+      where,
+      attributes: ["id", "emailOrPhone", "role", "createdAt"],
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]],
+    });
 
-    return res.json({ success: true, message: "Password changed successfully" });
-
+    res.json({
+      message: "Users fetched successfully",
+      total: users.count,
+      page,
+      limit,
+      data: users.rows,
+    });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: "Error fetching users",
+      error: error.message,
+    });
   }
 };

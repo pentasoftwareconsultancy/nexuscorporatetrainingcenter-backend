@@ -69,35 +69,58 @@ export function setupAssociations() {
     as: "event",
   });
 
+  //--------------------------
   // CATEGORY → TEST
+  //--------------------------
   TestCategory.hasMany(Test, { foreignKey: "categoryId", as: "tests" });
   Test.belongsTo(TestCategory, { foreignKey: "categoryId", as: "category" });
 
+  //--------------------------
   // TEST → QUESTIONS
+  //--------------------------
   Test.hasMany(Question, { foreignKey: "testId", as: "questions" });
   Question.belongsTo(Test, { foreignKey: "testId", as: "test" });
 
+  //--------------------------
   // QUESTION → OPTIONS
+  //--------------------------
   Question.hasMany(Option, { foreignKey: "questionId", as: "options" });
   Option.belongsTo(Question, { foreignKey: "questionId", as: "question" });
 
-  // USER → USER TEST
-  User.hasMany(UserTest, { foreignKey: "userId" });
-  UserTest.belongsTo(User, { foreignKey: "userId" });
+  //--------------------------
+  // USER → USER TEST (IMPORTANT!)
+  //--------------------------
+  User.hasMany(UserTest, { foreignKey: "userId", as: "userTests" });
+  UserTest.belongsTo(User, { foreignKey: "userId", as: "user" });
 
+  //--------------------------
   // TEST → USER TEST
-  Test.hasMany(UserTest, { foreignKey: "testId" });
-  UserTest.belongsTo(Test, { foreignKey: "testId" });
+  //--------------------------
+  Test.hasMany(UserTest, { foreignKey: "testId", as: "userTests" });
+  UserTest.belongsTo(Test, { foreignKey: "testId", as: "test" });
 
+  //--------------------------
   // USER TEST → USER ANSWER
-  UserTest.hasMany(UserAnswer, { foreignKey: "userTestId", as: "answers" });
-  UserAnswer.belongsTo(UserTest, { foreignKey: "userTestId" });
+  //--------------------------
+  UserTest.hasMany(UserAnswer, {
+    foreignKey: "userTestId",
+    as: "userAnswers",
+  });
 
+  UserAnswer.belongsTo(UserTest, {
+    foreignKey: "userTestId",
+    as: "userTest",
+  });
+
+  //--------------------------
   // QUESTION → USER ANSWER
+  //--------------------------
   Question.hasMany(UserAnswer, { foreignKey: "questionId" });
   UserAnswer.belongsTo(Question, { foreignKey: "questionId" });
 
+  //--------------------------
   // OPTION → USER ANSWER
+  //--------------------------
   Option.hasMany(UserAnswer, { foreignKey: "optionId" });
   UserAnswer.belongsTo(Option, { foreignKey: "optionId" });
 }
