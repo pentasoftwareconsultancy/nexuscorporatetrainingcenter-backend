@@ -33,7 +33,7 @@ app.use("/api/media", media);
 app.use("/api/events", eventRoutes);
 app.use("/api/tests", testRoutes);
 app.use("/api/uploads", uploadRoutes);
-app.use("/api/placements", placementRoutes);
+app.use("/api/placement", placementRoutes);
 app.use("/api/faculty", facultyRoutes);
 
 app.get("/api/user/profile", protect, (req, res) => {

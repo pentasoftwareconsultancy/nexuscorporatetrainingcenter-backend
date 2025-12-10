@@ -9,6 +9,7 @@ export const register = async (req, res) => {
       emailOrPhone,
       password,
       confirmPassword,
+      role,
       passwordRecoveryQuestion,
       passwordRecoveryAnswer
     } = req.body;
@@ -24,6 +25,7 @@ export const register = async (req, res) => {
     const user = await User.create({
       emailOrPhone,
       password: hashedPassword,
+      role,
       passwordRecoveryQuestion,
       passwordRecoveryAnswer: hashedAnswer,
     });

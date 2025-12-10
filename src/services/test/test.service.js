@@ -98,7 +98,7 @@ class TestService {
 
   // SUBMIT TEST WITH ATTEMPT_NUMBER + UPDATE ANSWER SUPPORT
   async submitTest(userId, body) {
-    const { testId, answers } = body;
+    const { testId, answers, title } = body;
     let correct = 0;
 
     // 1️⃣ Find last attempt
@@ -114,6 +114,7 @@ class TestService {
       userId,
       testId,
       attempt_number,
+      title,
       total_questions: answers.length,
       attempted: answers.length,
       correct_answers: 0,
@@ -157,6 +158,13 @@ class TestService {
     });
 
     return userTest;
+  }
+
+  async getLatestAttempt(userId, testId) {
+    return await UserTest.findOne({
+      where: { userId, testId },
+      order: [["attempt_number", "DESC"]], // or id DESC
+    });
   }
 }
 
