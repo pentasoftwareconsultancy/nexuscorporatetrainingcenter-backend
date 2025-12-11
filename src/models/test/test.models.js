@@ -26,7 +26,7 @@ export const Option = sequelize.define("Option", {
 
 export const UserTest = sequelize.define("UserTest", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-  title: { type: DataTypes.STRING, allowNull: false },
+  title: { type: DataTypes.STRING, allowNull: true },
   attempt_number: { type: DataTypes.INTEGER, defaultValue: 1 },
   total_questions: { type: DataTypes.INTEGER },
   attempted: { type: DataTypes.INTEGER },

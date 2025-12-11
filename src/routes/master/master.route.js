@@ -28,41 +28,44 @@ router.delete(
 );
 
 /* ---------------- CLEAR COURSE CACHE ---------------- */
-const clearCoursesCache = (req, res, next) => {
-  cacheStore.del("courses");
-  next();
-};
+const clearCoursesCache = (req, res, next) => { cacheStore.del("courses"); next(); };
 
 /* --------------------- COURSES --------------------- */
 
-router.post(
-  "/courses",
-  protect,
-  clearCoursesCache, // CLEAR CACHE
-  masterController.createCourse
-);
+router.post( "/courses", protect, clearCoursesCache, masterController.createCourse ); // Clear cache
 
-router.get(
-  "/courses",
-  pagination,
-  cache("courses"), // USE CACHE
-  masterController.getAllCourses
-);
+router.get( "/courses", pagination, cache("courses"), masterController.getAllCourses ); // Clear cache
 
 router.get("/courses/:id", masterController.getCourseById);
 
-router.put(
-  "/courses/:id",
+router.put( "/courses/:id", protect, clearCoursesCache, masterController.updateCourse ); // Clear cache
+
+router.delete( "/courses/:id", protect, clearCoursesCache, masterController.deleteCourse ); // Clear cache
+
+/* ---------------- COURSE DETAILS ---------------- */
+
+router.post(
+  "/course-details",
   protect,
-  clearCoursesCache, // CLEAR CACHE
-  masterController.updateCourse
+  clearCoursesCache,
+  masterController.createCourseDetails
+);
+
+router.get(
+  "/course-details/:courseId",
+  masterController.getCourseDetails
+);
+
+router.put(
+  "/course-details/:courseId",
+  protect,
+  masterController.updateCourseDetails
 );
 
 router.delete(
-  "/courses/:id",
+  "/course-details/:courseId",
   protect,
-  clearCoursesCache, // CLEAR CACHE
-  masterController.deleteCourse
+  masterController.deleteCourseDetails
 );
 
 /* --------------------- BATCHES --------------------- */

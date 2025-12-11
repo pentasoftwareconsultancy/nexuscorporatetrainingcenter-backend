@@ -95,6 +95,49 @@ const masterController = {
     }
   },
 
+  // =========================== COURSE DETAILS ============================
+  createCourseDetails: async (req, res) => {
+    try {
+      const data = await masterService.createCourseDetails(req.body, req.file);
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  getCourseDetails: async (req, res) => {
+    try {
+      const data = await masterService.getCourseDetailsByCourseId(
+        req.params.courseId
+      );
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(404).json({ success: false, message: err.message });
+    }
+  },
+
+  updateCourseDetails: async (req, res) => {
+    try {
+      const data = await masterService.updateCourseDetails(
+        req.params.id,
+        req.body,
+        req.file
+      );
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  deleteCourseDetails: async (req, res) => {
+    try {
+      await masterService.deleteCourseDetails(req.params.id);
+      res.json({ success: true, message: "Course details deleted" });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
   // =============================== BATCHES ===============================
   createBatch: async (req, res) => {
     console.log("BODY RECEIVED:", req.body); // <-- ADD THIS

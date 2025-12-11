@@ -1,6 +1,7 @@
 import {
   Course,
   Batch,
+  CourseDetails,
   CourseCategory,
 } from "../../models/master/master.models.js";
 
@@ -61,6 +62,39 @@ const masterService = {
     const course = await Course.findByPk(id);
     if (!course) throw new Error("Course not found");
     return await course.destroy();
+  },
+
+  // =========================== COURSE DETAILS ============================
+  createCourseDetails: async (body) => {
+    // body must contain courseId + other fields
+    return await CourseDetails.create(body);
+  },
+
+  getCourseDetailsByCourseId: async (courseId) => {
+    const details = await CourseDetails.findOne({
+      where: { courseId },
+    });
+
+    if (!details) throw new Error("Course details not found");
+    return details;
+  },
+
+  updateCourseDetails: async (courseId, body) => {
+    const details = await CourseDetails.findOne({
+      where: { courseId },
+    });
+
+    if (!details) throw new Error("Course details not found");
+    return await details.update(body);
+  },
+
+  deleteCourseDetails: async (courseId) => {
+    const details = await CourseDetails.findOne({
+      where: { courseId },
+    });
+
+    if (!details) throw new Error("Course details not found");
+    return await details.destroy();
   },
 
   // =============================== BATCHES ===============================
