@@ -1,5 +1,5 @@
 import express from "express";
-import cors from "cors"; // ✅ Import CORS
+import cors from "cors"; 
 
 import authRoutes from "./routes/users/auth.routes.js";
 import { protect } from "./middlewares/auth.middleware.js";
@@ -17,7 +17,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Add CORS middleware BEFORE routes
+//Add CORS middleware BEFORE routes
 app.use(
   cors({
     origin: "http://localhost:5173", // your React frontend URL
