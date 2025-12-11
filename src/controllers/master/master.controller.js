@@ -96,6 +96,7 @@ const masterController = {
   },
 
   // =========================== COURSE DETAILS ============================
+  /* ================= CREATE ================= */
   createCourseDetails: async (req, res) => {
     try {
       const data = await masterService.createCourseDetails(req.body, req.file);
@@ -105,6 +106,7 @@ const masterController = {
     }
   },
 
+  /* ================= READ ================= */
   getCourseDetails: async (req, res) => {
     try {
       const data = await masterService.getCourseDetailsByCourseId(
@@ -116,10 +118,11 @@ const masterController = {
     }
   },
 
+  /* ================= UPDATE ================= */
   updateCourseDetails: async (req, res) => {
     try {
       const data = await masterService.updateCourseDetails(
-        req.params.id,
+        req.params.courseId,
         req.body,
         req.file
       );
@@ -129,9 +132,10 @@ const masterController = {
     }
   },
 
+  /* ================= DELETE ================= */
   deleteCourseDetails: async (req, res) => {
     try {
-      await masterService.deleteCourseDetails(req.params.id);
+      await masterService.deleteCourseDetails(req.params.courseId);
       res.json({ success: true, message: "Course details deleted" });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });
