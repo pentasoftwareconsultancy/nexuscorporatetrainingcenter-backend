@@ -28,4 +28,7 @@ router.post("/submit", protect, testController.submitTest);
 // GET latest attempt for a test
 router.get("/latest/:testId", protect, testController.getLatestAttempt);
 
+// GET all attempts for a test
+router.get("/usertest/:userTestId/summary", testController.getUserTestSummary);
+
 export default router;
