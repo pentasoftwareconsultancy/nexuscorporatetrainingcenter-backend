@@ -96,6 +96,28 @@ const masterController = {
   },
 
   // =========================== COURSE DETAILS ============================
+   getCategoryWithCourses: async (req, res) => {
+    try {
+      const { categoryId } = req.params;
+    
+      const data = await masterService.getCategoryWithCoursesAndDetails(categoryId);
+    
+      if (!data) {
+        return res.status(404).json({
+          success: false,
+          message: "Category not found"
+        });
+      }
+    
+      res.json({ success: true, data });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  },
   /* ================= CREATE ================= */
   createCourseDetails: async (req, res) => {
     try {

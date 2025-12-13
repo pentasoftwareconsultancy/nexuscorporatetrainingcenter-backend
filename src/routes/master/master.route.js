@@ -90,6 +90,11 @@ router.delete(
   masterController.deleteCourseDetails
 );
 
+router.get(
+  "/categories-with-courses/:categoryId",
+  masterController.getCategoryWithCourses
+);
+
 /* --------------------- BATCHES --------------------- */
 
 router.post("/batches", protect, masterController.createBatch);

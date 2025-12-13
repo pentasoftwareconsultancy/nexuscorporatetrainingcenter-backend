@@ -93,6 +93,24 @@ const masterService = {
     return details;
   },
 
+   getCategoryWithCoursesAndDetails: async (categoryId) => {
+    return await CourseCategory.findOne({
+      where: { id: categoryId },
+      include: [
+        {
+          model: Course,
+          as: "courses",
+          include: [
+            {
+              model: CourseDetails,
+              as: "details"
+            }
+          ]
+        }
+      ]
+    });
+  },
+
   /* ================= UPDATE ================= */
   updateCourseDetails: async (courseId, body, file) => {
     const details = await CourseDetails.findOne({ where: { courseId } });

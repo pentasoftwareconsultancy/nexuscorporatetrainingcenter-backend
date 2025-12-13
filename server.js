@@ -26,7 +26,7 @@ const start = async () => {
     setupAssociations();
 
     // Sync database ONLY ONE TIME
-    await sequelize.sync({ alter: true }); // <-- NO alter, NO force
+    await sequelize.sync({alter :false}); // <-- NO alter, NO force
     console.log("Database synced successfully!");
 
     app.listen(PORT, () => {
