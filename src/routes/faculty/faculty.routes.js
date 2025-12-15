@@ -25,27 +25,3 @@ router.get("/:id", getFacultyById);
 
 export default router;
 
-
-// import express from "express";
-// import multer from "multer";
-
-// import {
-//   createFaculty,
-//   getAllFaculty,
-//   getFacultyById,
-//   updateFaculty,
-//   deleteFaculty
-// } from "../../controllers/faculty/faculty.controller.js";
-
-// import { protect } from "../../middlewares/auth.middleware.js";
-
-// const upload = multer({ dest: "uploads/" });
-// const router = express.Router();
-
-// router.post("/", protect, upload.single("file"), createFaculty);
-// router.get("/", getAllFaculty);
-// router.get("/:id", getFacultyById);
-// router.put("/:id", protect, upload.single("file"), updateFaculty);
-// router.delete("/:id", protect, deleteFaculty);
-
-// export default router;

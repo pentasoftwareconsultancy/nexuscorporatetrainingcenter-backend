@@ -4,6 +4,7 @@ import { pagination } from "../../middlewares/pagination.js";
 import { cache, cacheStore } from "../../utils/cache.js";
 import masterController from "../../controllers/master/master.controller.js";
 import { protect } from "../../middlewares/auth.middleware.js";
+import { upload } from "../../middlewares/upload.js";
 
 const router = express.Router();
 
@@ -38,31 +39,60 @@ const clearCoursesCache = (req, res, next) => {
 router.post(
   "/courses",
   protect,
-  clearCoursesCache, // CLEAR CACHE
+  clearCoursesCache,
   masterController.createCourse
-);
+); // Clear cache
 
 router.get(
   "/courses",
   pagination,
-  cache("courses"), // USE CACHE
+  cache("courses"),
   masterController.getAllCourses
-);
+); // Clear cache
 
 router.get("/courses/:id", masterController.getCourseById);
 
 router.put(
   "/courses/:id",
   protect,
-  clearCoursesCache, // CLEAR CACHE
+  clearCoursesCache,
   masterController.updateCourse
-);
+); // Clear cache
 
 router.delete(
   "/courses/:id",
   protect,
-  clearCoursesCache, // CLEAR CACHE
+  clearCoursesCache,
   masterController.deleteCourse
+); // Clear cache
+
+/* ---------------- COURSE DETAILS ---------------- */
+
+router.post(
+  "/course-details",
+  protect,
+  upload.single("syllabus_pdf"),
+  masterController.createCourseDetails
+);
+
+router.get("/course-details/:courseId", masterController.getCourseDetails);
+
+router.put(
+  "/course-details/:courseId",
+  protect,
+  upload.single("syllabus_pdf"),
+  masterController.updateCourseDetails
+);
+
+router.delete(
+  "/course-details/:courseId",
+  protect,
+  masterController.deleteCourseDetails
+);
+
+router.get(
+  "/categories-with-courses/:categoryId",
+  masterController.getCategoryWithCourses
 );
 
 /* --------------------- BATCHES --------------------- */

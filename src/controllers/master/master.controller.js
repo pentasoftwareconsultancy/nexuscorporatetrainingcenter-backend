@@ -95,6 +95,75 @@ const masterController = {
     }
   },
 
+  // =========================== COURSE DETAILS ============================
+   getCategoryWithCourses: async (req, res) => {
+    try {
+      const { categoryId } = req.params;
+    
+      const data = await masterService.getCategoryWithCoursesAndDetails(categoryId);
+    
+      if (!data) {
+        return res.status(404).json({
+          success: false,
+          message: "Category not found"
+        });
+      }
+    
+      res.json({ success: true, data });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  },
+  /* ================= CREATE ================= */
+  createCourseDetails: async (req, res) => {
+    try {
+      const data = await masterService.createCourseDetails(req.body, req.file);
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  /* ================= READ ================= */
+  getCourseDetails: async (req, res) => {
+    try {
+      const data = await masterService.getCourseDetailsByCourseId(
+        req.params.courseId
+      );
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(404).json({ success: false, message: err.message });
+    }
+  },
+
+  /* ================= UPDATE ================= */
+  updateCourseDetails: async (req, res) => {
+    try {
+      const data = await masterService.updateCourseDetails(
+        req.params.courseId,
+        req.body,
+        req.file
+      );
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  /* ================= DELETE ================= */
+  deleteCourseDetails: async (req, res) => {
+    try {
+      await masterService.deleteCourseDetails(req.params.courseId);
+      res.json({ success: true, message: "Course details deleted" });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
   // =============================== BATCHES ===============================
   createBatch: async (req, res) => {
     console.log("BODY RECEIVED:", req.body); // <-- ADD THIS
