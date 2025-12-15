@@ -66,6 +66,13 @@ router.delete(
   masterController.deleteCourse
 ); // Clear cache
 
+router.post(
+  "/courses-full",
+  protect,
+  upload.single("syllabus_pdf"),
+  masterController.createCourseWithDetails
+);
+
 /* ---------------- COURSE DETAILS ---------------- */
 
 router.post(

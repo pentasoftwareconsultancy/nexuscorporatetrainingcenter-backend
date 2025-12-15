@@ -5,7 +5,7 @@ import { sequelize } from "../../config/db.js";
 
 export const CourseCategory = sequelize.define("CourseCategory", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-  name: { type: DataTypes.STRING, allowNull: false },
+  name: { type: DataTypes.STRING, allowNull: false, unique: true },
 });
 
 /* ====================== COURSE ===================== */
@@ -15,7 +15,7 @@ export const Course = sequelize.define("Course", {
     autoIncrement: true,
     primaryKey: true,
   },
-  title: DataTypes.STRING,
+  title: { type: DataTypes.STRING, unique: true },
   description: DataTypes.TEXT,
   duration: DataTypes.STRING,
   fees: DataTypes.DECIMAL,
