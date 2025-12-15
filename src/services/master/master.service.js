@@ -4,12 +4,27 @@ import {
   CourseDetails,
   CourseCategory,
 } from "../../models/master/master.models.js";
+import { sequelize } from "../../config/db.js";
 import { uploadPDFToCloudinary } from "../../utils/cloudinaryUpload.js";
 
 const masterService = {
   // ------------------ COURSE CATEGORY ------------------
   createCourseCategory: async (body) => {
-    return await CourseCategory.create(body);
+    const { name } = body;
+
+    if (!name) {
+      throw new Error("Category name is required");
+    }
+
+    const existing = await CourseCategory.findOne({
+      where: { name },
+    });
+
+    if (existing) {
+      throw new Error("Category already exists");
+    }
+
+    return await CourseCategory.create({ name });
   },
 
   getAllCourseCategories: async () => {
@@ -65,6 +80,73 @@ const masterService = {
     return await course.destroy();
   },
 
+  createCourseWithDetails: async (body, file, userId) => {
+    const t = await sequelize.transaction();
+
+    try {
+      const {
+        title,
+        description,
+        duration,
+        fees,
+        categoryId,
+        instructor,
+        what_you_will_learn,
+        syllabus,
+      } = body;
+
+      // 🔐 duplicate course check (same title + same category)
+      const exists = await Course.findOne({
+        where: {
+          title,
+          categoryId: Number(categoryId),
+        },
+        transaction: t,
+      });
+
+      if (exists) {
+        throw new Error("Course already exists in this category");
+      }
+
+      // 1️⃣ create course
+      const course = await Course.create(
+        {
+          title,
+          description,
+          duration,
+          fees,
+          categoryId: Number(categoryId),
+          createdBy: userId,
+        },
+        { transaction: t }
+      );
+
+      // 2️⃣ upload pdf
+      let pdfUrl = null;
+      if (file) {
+        pdfUrl = await uploadPDFToCloudinary(file.path);
+      }
+
+      // 3️⃣ create course details
+      await CourseDetails.create(
+        {
+          courseId: course.id,
+          instructor,
+          what_you_will_learn,
+          syllabus,
+          syllabus_pdf: pdfUrl,
+        },
+        { transaction: t }
+      );
+
+      await t.commit();
+      return course;
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+  },
+
   // =========================== COURSE DETAILS ============================
   createCourseDetails: async (body, file) => {
     if (!body.courseId) throw new Error("courseId is required");
@@ -93,7 +175,7 @@ const masterService = {
     return details;
   },
 
-   getCategoryWithCoursesAndDetails: async (categoryId) => {
+  getCategoryWithCoursesAndDetails: async (categoryId) => {
     return await CourseCategory.findOne({
       where: { id: categoryId },
       include: [
@@ -103,11 +185,11 @@ const masterService = {
           include: [
             {
               model: CourseDetails,
-              as: "details"
-            }
-          ]
-        }
-      ]
+              as: "details",
+            },
+          ],
+        },
+      ],
     });
   },
 
