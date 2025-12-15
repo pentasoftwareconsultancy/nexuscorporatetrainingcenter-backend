@@ -8,6 +8,7 @@ export const CourseCategory = sequelize.define("CourseCategory", {
   name: { type: DataTypes.STRING, allowNull: false },
 });
 
+/* ====================== COURSE ===================== */
 export const Course = sequelize.define("Course", {
   id: {
     type: DataTypes.INTEGER,
@@ -34,6 +35,41 @@ export const Course = sequelize.define("Course", {
   },
 });
 
+/* ==================== COURSE DETAILS =================== */
+export const CourseDetails = sequelize.define("CourseDetails", {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+
+  what_you_will_learn: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+
+  syllabus: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+
+  syllabus_pdf: {
+    type: DataTypes.STRING, // store filename or full URL
+    allowNull: true,
+  },
+
+  instructor: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+
+  courseId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  }
+});
+
+/* ======================= BATCH ====================== */
 export const Batch = sequelize.define("Batch", {
   id: {
     type: DataTypes.INTEGER, // FIXED

@@ -11,10 +11,9 @@ export const register = async (req, res) => {
       confirmPassword,
       role,
       passwordRecoveryQuestion,
-      passwordRecoveryAnswer
+      passwordRecoveryAnswer,
     } = req.body;
 
-    
     if (password !== confirmPassword) {
       return res.status(400).json({ message: "Passwords do not match" });
     }
@@ -35,7 +34,6 @@ export const register = async (req, res) => {
     res.status(500).json({ message: "Error registering", error });
   }
 };
-
 
 /* LOGIN */
 export const login = async (req, res) => {
@@ -89,7 +87,9 @@ export const changePassword = async (req, res) => {
 /* FORGOT PASSWORD - STEP 1 */
 export const forgotPassword = async (req, res) => {
   try {
-    const user = await User.findOne({ where: { emailOrPhone: req.body.emailOrPhone } });
+    const user = await User.findOne({
+      where: { emailOrPhone: req.body.emailOrPhone },
+    });
     if (!user) return res.status(404).json({ message: "User not found" });
 
     res.json({
@@ -112,18 +112,15 @@ export const verifyRecoveryAnswer = async (req, res) => {
     const match = await bcrypt.compare(answer, user.passwordRecoveryAnswer);
     if (!match) return res.status(400).json({ message: "Wrong answer" });
 
-    const resetToken = jwt.sign(
-      { id: user.id },
-      process.env.JWT_SECRET,
-      { expiresIn: "10m" }
-    );
+    const resetToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+      expiresIn: "10m",
+    });
 
     res.json({ message: "Verified", resetToken });
   } catch (error) {
     res.status(500).json({ message: "Error verifying answer", error });
   }
 };
-
 
 /* RESET PASSWORD - STEP 3 */
 export const resetPassword = async (req, res) => {
@@ -138,17 +135,13 @@ export const resetPassword = async (req, res) => {
 
     const hashed = await bcrypt.hash(newPassword, 12);
 
-    await User.update(
-      { password: hashed },
-      { where: { id: decoded.id } }
-    );
+    await User.update({ password: hashed }, { where: { id: decoded.id } });
 
     res.json({ message: "Password reset successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error resetting password", error });
   }
 };
-
 
 export const getAllUsers = async (req, res) => {
   try {
@@ -177,14 +170,12 @@ export const getAllUsers = async (req, res) => {
       total: users.count,
       page,
       limit,
-      data: users.rows
+      data: users.rows,
     });
-
   } catch (error) {
     res.status(500).json({
       message: "Error fetching users",
-      error: error.message
+      error: error.message,
     });
   }
 };
-

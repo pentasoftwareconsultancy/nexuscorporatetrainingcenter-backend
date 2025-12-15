@@ -1,8 +1,10 @@
 import {
   Course,
   Batch,
+  CourseDetails,
   CourseCategory,
 } from "../../models/master/master.models.js";
+import { uploadPDFToCloudinary } from "../../utils/cloudinaryUpload.js";
 
 const masterService = {
   // ------------------ COURSE CATEGORY ------------------
@@ -61,6 +63,79 @@ const masterService = {
     const course = await Course.findByPk(id);
     if (!course) throw new Error("Course not found");
     return await course.destroy();
+  },
+
+  // =========================== COURSE DETAILS ============================
+  createCourseDetails: async (body, file) => {
+    if (!body.courseId) throw new Error("courseId is required");
+
+    // Ensure course exists
+    const course = await Course.findByPk(body.courseId);
+    if (!course) throw new Error("Course not found");
+
+    let pdfUrl = null;
+
+    if (file) {
+      pdfUrl = await uploadPDFToCloudinary(file.path);
+    }
+
+    return await CourseDetails.create({
+      ...body,
+      syllabus_pdf: pdfUrl,
+    });
+  },
+
+  /* ================= READ ================= */
+  getCourseDetailsByCourseId: async (courseId) => {
+    const details = await CourseDetails.findOne({ where: { courseId } });
+
+    if (!details) throw new Error("Course details not found");
+    return details;
+  },
+
+   getCategoryWithCoursesAndDetails: async (categoryId) => {
+    return await CourseCategory.findOne({
+      where: { id: categoryId },
+      include: [
+        {
+          model: Course,
+          as: "courses",
+          include: [
+            {
+              model: CourseDetails,
+              as: "details"
+            }
+          ]
+        }
+      ]
+    });
+  },
+
+  /* ================= UPDATE ================= */
+  updateCourseDetails: async (courseId, body, file) => {
+    const details = await CourseDetails.findOne({ where: { courseId } });
+
+    if (!details) throw new Error("Course details not found");
+
+    let pdfUrl = details.syllabus_pdf;
+
+    if (file) {
+      pdfUrl = await uploadPDFToCloudinary(file.path);
+    }
+
+    return await details.update({
+      ...body,
+      syllabus_pdf: pdfUrl,
+    });
+  },
+
+  /* ================= DELETE ================= */
+  deleteCourseDetails: async (courseId) => {
+    const details = await CourseDetails.findOne({ where: { courseId } });
+
+    if (!details) throw new Error("Course details not found");
+
+    return await details.destroy();
   },
 
   // =============================== BATCHES ===============================

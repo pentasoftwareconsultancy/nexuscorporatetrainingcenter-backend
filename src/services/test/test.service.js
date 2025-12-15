@@ -101,7 +101,7 @@ class TestService {
     const { testId, answers, title } = body;
     let correct = 0;
 
-    // 1️⃣ Find last attempt
+    // Find last attempt
     const lastAttempt = await UserTest.findOne({
       where: { userId, testId },
       order: [["attempt_number", "DESC"]],
@@ -109,7 +109,7 @@ class TestService {
 
     const attempt_number = lastAttempt ? lastAttempt.attempt_number + 1 : 1;
 
-    // 2️⃣ Create new test attempt
+    // Create new test attempt
     const userTest = await UserTest.create({
       userId,
       testId,
@@ -121,7 +121,7 @@ class TestService {
       score: 0,
     });
 
-    // 3️⃣ Process answers
+    // Process answers
     for (const ans of answers) {
       const option = await Option.findByPk(ans.optionId);
       const isCorrect = option?.is_correct === true;
@@ -151,7 +151,6 @@ class TestService {
       if (isCorrect) correct++;
     }
 
-    // 4️⃣ Final score
     await userTest.update({
       correct_answers: correct,
       score: (correct / answers.length) * 100,
