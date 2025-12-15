@@ -95,6 +95,27 @@ const masterController = {
     }
   },
 
+  createCourseWithDetails: async (req, res) => {
+    try {
+      const data = await masterService.createCourseWithDetails(
+        req.body,
+        req.file,
+        req.user.id
+      );
+    
+      res.status(201).json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  },
+
   // =========================== COURSE DETAILS ============================
    getCategoryWithCourses: async (req, res) => {
     try {
