@@ -16,6 +16,7 @@ export const Test = sequelize.define("Test", {
 export const Question = sequelize.define("Question", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
   question_text: { type: DataTypes.TEXT, allowNull: false },
+  answer_explanation: { type: DataTypes.TEXT, allowNull: true },
 });
 
 export const Option = sequelize.define("Option", {

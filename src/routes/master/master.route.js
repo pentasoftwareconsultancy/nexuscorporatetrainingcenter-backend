@@ -66,6 +66,13 @@ router.delete(
   masterController.deleteCourse
 ); // Clear cache
 
+router.post(
+  "/courses-full",
+  protect,
+  upload.single("syllabus_pdf"),
+  masterController.createCourseWithDetails
+);
+
 /* ---------------- COURSE DETAILS ---------------- */
 
 router.post(
@@ -88,6 +95,11 @@ router.delete(
   "/course-details/:courseId",
   protect,
   masterController.deleteCourseDetails
+);
+
+router.get(
+  "/categories-with-courses/:categoryId",
+  masterController.getCategoryWithCourses
 );
 
 /* --------------------- BATCHES --------------------- */
