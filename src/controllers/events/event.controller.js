@@ -63,6 +63,52 @@ const eventController = {
       res.status(400).json({ success: false, message: err.message });
     }
   },
+
+  // ------------------- EVENT STORIES -------------------
+  createStory: async (req, res) => {
+    try {
+      const data = await eventService.createStory(req.file, req.body);
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  getAllStories: async (req, res) => {
+    try {
+      const data = await eventService.getAllStories();
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(500).json({ success: false, message: err.message });
+    }
+  },
+
+  getStoryById: async (req, res) => {
+    try {
+      const data = await eventService.getStoryById(req.params.id);
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(404).json({ success: false, message: err.message });
+    }
+  },
+
+  updateStory: async (req, res) => {
+    try {
+      const data = await eventService.updateStory(req.params.id, req.body, req.file);
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+
+  deleteStory: async (req, res) => {
+    try {
+      const data = await eventService.deleteStory(req.params.id);
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
 };
 
 export default eventController;
