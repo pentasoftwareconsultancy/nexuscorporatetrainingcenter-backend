@@ -48,7 +48,13 @@ const eventController = {
 
   uploadEventImage: async (req, res) => {
     try {
-      const data = await eventService.uploadEventImage(req.file, req.body);
+      const files = req.files?.files || [];
+
+      if (!files.length) {
+        throw new Error("No files uploaded");
+      }
+
+      const data = await eventService.uploadEventImages(files, req.body);
       res.json({ success: true, data });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });
@@ -94,7 +100,11 @@ const eventController = {
 
   updateStory: async (req, res) => {
     try {
-      const data = await eventService.updateStory(req.params.id, req.body, req.file);
+      const data = await eventService.updateStory(
+        req.params.id,
+        req.body,
+        req.file
+      );
       res.json({ success: true, data });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });

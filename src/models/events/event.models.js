@@ -26,9 +26,16 @@ export const EventImage = sequelize.define("EventImage", {
 
 // 🔹 New table: EventStories
 export const EventStories = sequelize.define("EventStories", {
-  id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-  image: { type: DataTypes.STRING, allowNull: false },
-  eventName: { type: DataTypes.STRING, allowNull: false },
-  date: { type: DataTypes.DATE, allowNull: false },
-  location: { type: DataTypes.STRING, allowNull: false },
-});
+    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+    image: { type: DataTypes.STRING, allowNull: false },
+    eventName: { type: DataTypes.STRING, allowNull: false },
+    date: { type: DataTypes.DATE, allowNull: false },
+    location: { type: DataTypes.STRING, allowNull: false },
+  },
+  {
+    tableName: "eventstories", // 🔥 THIS LINE
+    timestamps: true,
+  }
+);
+
+sequelize.options.logging = console.log;

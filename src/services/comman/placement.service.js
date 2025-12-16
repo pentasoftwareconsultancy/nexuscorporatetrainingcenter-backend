@@ -31,7 +31,52 @@ class PlacementService {
 
   /* ---------------- PLACEMENTS ---------------- */
 
+async getCategoryYearWisePlacements() {
+  const rows = await Placement.findAll({
+    attributes: [
+      "placement_id",
+      "student_name",
+      "company_name",
+      "company_role",
+      "course",
+      "package",
+      "image",
+      "year"
+    ],
+    include: [
+      {
+        model: PlacementCategory,
+        attributes: ["name"]
+      }
+    ],
+    order: [["year", "DESC"]]
+  });
 
+  const result = {};
+
+  rows.forEach(p => {
+    const category = p.PlacementCategory.name;
+    const year = p.year;
+
+    if (!result[category]) result[category] = {};
+    if (!result[category][year]) result[category][year] = [];
+
+    result[category][year].push(p);
+  });
+
+  return result;
+}
+
+async getFullPlacementById(placementId) {
+  return await Placement.findByPk(placementId, {
+    include: [
+      {
+        model: PlacementDetails,
+        as: "details"
+      }
+    ]
+  });
+}
 
 
   /* ================= CREATE PLACEMENT ================= */

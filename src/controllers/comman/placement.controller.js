@@ -120,6 +120,15 @@ export const deletePlacement = async (req, res) => {
   }
 };
 
+export const getCategoryYearWisePlacements = async (req, res) => {
+  try {
+    const data = await placementService.getCategoryYearWisePlacements();
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 
 /* ---------------- DETAILS ---------------- */
 export const createPlacementDetails = async (req, res) => {
@@ -162,6 +171,41 @@ export const updatePlacementDetails = async (req, res) => {
   }
 };
 
+export const getFullPlacementById = async (req, res) => {
+  try {
+    const placement = await placementService.getFullPlacementById(
+      req.params.placementId
+    );
+
+    if (!placement) {
+      return res.status(404).json({ success: false, message: "Not found" });
+    }
+
+    // 🔥 FLATTEN RESPONSE
+    const data = {
+      [placement.placement_id]: {
+        placement_id: placement.placement_id,
+        student_name: placement.student_name,
+        company_name: placement.company_name,
+        company_role: placement.company_role,
+        course: placement.course,
+        package: placement.package,
+        image: placement.image,
+        year: placement.year,
+
+        success_story: placement.details?.success_story || null,
+        facing_challenges: placement.details?.facing_challenges || null,
+        program_highlights: placement.details?.program_highlights || null,
+        final_evaluation: placement.details?.final_evaluation || null,
+        overall_experience: placement.details?.overall_experience || null
+      }
+    };
+
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
 
 
 /* ---------------- YEAR-WISE ---------------- */
