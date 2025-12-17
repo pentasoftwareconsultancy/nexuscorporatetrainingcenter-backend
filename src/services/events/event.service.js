@@ -15,8 +15,8 @@ class EventService {
   // ------------------- ALL EVENTS ---------------------
   async getAllEvents() {
     const events = await Event.findAll({
-      include: [{ model: EventImage, as: "images" }],
       order: [["id", "DESC"]],
+      include: [{ model: EventImage, as: "images" }],
     });
 
     return events.map((e) => e.toJSON());
@@ -29,7 +29,6 @@ class EventService {
     });
 
     if (!event) throw new Error("Event not found");
-
     return event.toJSON();
   }
 
