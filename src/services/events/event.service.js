@@ -1,4 +1,8 @@
-import { Event, EventImage, EventStories } from "../../models/events/event.models.js";
+import {
+  Event,
+  EventImage,
+  EventStories,
+} from "../../models/events/event.models.js";
 import cloudinary from "../../config/cloudinary.js";
 
 class EventService {
@@ -11,8 +15,8 @@ class EventService {
   // ------------------- ALL EVENTS ---------------------
   async getAllEvents() {
     const events = await Event.findAll({
-      include: [{ model: EventImage, as: "images" }],
       order: [["id", "DESC"]],
+      include: [{ model: EventImage, as: "images" }],
     });
 
     return events.map((e) => e.toJSON());
@@ -25,7 +29,6 @@ class EventService {
     });
 
     if (!event) throw new Error("Event not found");
-
     return event.toJSON();
   }
 
@@ -48,21 +51,24 @@ class EventService {
   }
 
   // ------------------- UPLOAD EVENT IMAGE -------------------
-  async uploadEventImage(file, body) {
-    if (!file) throw new Error("File is required");
+  async uploadEventImages(files, body) {
+    const uploadedImages = [];
 
-    const uploaded = await cloudinary.uploader.upload(file.path, {
-      folder: "nexus_events",
-      resource_type: "auto",
-    });
+    for (const file of files) {
+      const uploaded = await cloudinary.uploader.upload(file.path, {
+        folder: "nexus_events",
+      });
 
-    const image = await EventImage.create({
-      url: uploaded.secure_url,
-      caption: body.caption || null,
-      eventId: body.eventId,
-    });
+      const image = await EventImage.create({
+        url: uploaded.secure_url,
+        caption: body.caption || null,
+        eventId: body.eventId,
+      });
 
-    return image.toJSON();
+      uploadedImages.push(image.toJSON());
+    }
+
+    return uploadedImages;
   }
 
   // ------------------- DELETE EVENT IMAGE -------------------

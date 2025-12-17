@@ -14,10 +14,10 @@ router.get("/city", mediaController.getCities);
 router.post("/college", mediaController.createCollege);
 router.get("/college/:cityId", mediaController.getCollegesByCity);
 
-/* IMAGES */
+/* IMAGES (MULTIPLE) */
 router.post(
   "/image/upload",
-  upload.single("file"), // MUST match Postman key
+  upload.array("files", 10), // ✅ MULTIPLE FILES
   mediaController.uploadImage
 );
 

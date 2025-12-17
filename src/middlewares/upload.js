@@ -9,5 +9,4 @@ const storage = multer.diskStorage({
   },
 });
 
-// ❗ MUST export like this ↓↓↓
 export const upload = multer({ storage });
