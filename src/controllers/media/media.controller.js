@@ -39,18 +39,20 @@ const mediaController = {
     }
   },
 
-  /* ========== IMAGES ========== */
+  /* ========== IMAGES (MULTIPLE) ========== */
   uploadImage: async (req, res) => {
     try {
-      if (!req.file)
+      if (!req.files || !req.files.length) {
         return res
           .status(400)
-          .json({ success: false, message: "File required" });
+          .json({ success: false, message: "Files required" });
+      }
 
-      const data = await mediaService.uploadImage(
+      const data = await mediaService.uploadImages(
         req.body.collegeId,
-        req.file.path,
-        req.body.caption || null
+        req.files,
+        req.body.caption || null,
+        req.body.description || null
       );
 
       res.json({ success: true, data });
