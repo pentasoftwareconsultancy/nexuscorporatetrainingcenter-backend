@@ -26,17 +26,26 @@ class MediaService {
     });
   }
 
-  /* ========== MEDIA / IMAGES ========== */
-  async uploadImage(collegeId, filePath, caption) {
-    const uploaded = await cloudinary.uploader.upload(filePath, {
-      folder: "nexus/colleges",
-    });
+  /* ========== MEDIA / IMAGES (MULTIPLE) ========== */
+  async uploadImages(collegeId, files, caption, description) {
+    const uploadedImages = [];
 
-    return await Media.create({
-      url: uploaded.secure_url,
-      caption,
-      collegeId,
-    });
+    for (const file of files) {
+      const uploaded = await cloudinary.uploader.upload(file.path, {
+        folder: "nexus/colleges",
+      });
+
+      const media = await Media.create({
+        url: uploaded.secure_url,
+        caption,
+        description,
+        collegeId,
+      });
+
+      uploadedImages.push(media);
+    }
+
+    return uploadedImages;
   }
 
   async getImagesByCollege(collegeId) {
@@ -47,7 +56,6 @@ class MediaService {
   }
 
   /* ===================== CITY ===================== */
-
   async updateCity(id, body) {
     const city = await City.findByPk(id);
     if (!city) throw new Error("City not found");
@@ -65,7 +73,6 @@ class MediaService {
   }
 
   /* ===================== COLLEGE ===================== */
-
   async updateCollege(id, body) {
     const college = await College.findByPk(id);
     if (!college) throw new Error("College not found");
@@ -82,15 +89,15 @@ class MediaService {
     return { message: "College deleted successfully" };
   }
 
-  /* ===================== MEDIA (IMAGE) ===================== */
-
+  /* ===================== MEDIA ===================== */
   async updateMedia(id, body) {
     const media = await Media.findByPk(id);
     if (!media) throw new Error("Media not found");
 
     await media.update({
       caption: body.caption ?? media.caption,
-      url: body.url ?? media.url, // Optional, only update if provided
+      description: body.description ?? media.description,
+      url: body.url ?? media.url,
       collegeId: body.collegeId ?? media.collegeId,
     });
 
