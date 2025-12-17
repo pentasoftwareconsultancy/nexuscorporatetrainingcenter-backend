@@ -16,23 +16,10 @@ class EventService {
   async getAllEvents() {
     const events = await Event.findAll({
       order: [["id", "DESC"]],
+      include: [{ model: EventImage, as: "images" }],
     });
 
-    const eventList = [];
-
-    for (const event of events) {
-      const images = await EventImage.findAll({
-        where: { collegeId: event.id }, // 🔥 MATCH DB
-        order: [["id", "ASC"]],
-      });
-
-      eventList.push({
-        ...event.toJSON(),
-        images: images.map((img) => img.toJSON()),
-      });
-    }
-
-    return eventList;
+    return events.map((e) => e.toJSON());
   }
 
   // ------------------- SINGLE EVENT -------------------
@@ -42,7 +29,6 @@ class EventService {
     });
 
     if (!event) throw new Error("Event not found");
-
     return event.toJSON();
   }
 
