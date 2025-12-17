@@ -1,5 +1,10 @@
 import User from "../users/user.model.js";
-import { Batch, Course, CourseCategory, CourseDetails } from "../master/master.models.js";
+import {
+  Batch,
+  Course,
+  CourseCategory,
+  CourseDetails,
+} from "../master/master.models.js";
 import { City, College, Media } from "../media/media.models.js";
 import { Event, EventImage } from "../events/event.models.js";
 import {
@@ -28,8 +33,8 @@ export function setupAssociations() {
   // _________________________
   // COURSE ↔ COURSE DETAILS
   // _________________________
-  Course.hasOne(CourseDetails, { foreignKey: "courseId", as: "details", });
-  CourseDetails.belongsTo(Course, { foreignKey: "courseId", as: "course", });
+  Course.hasOne(CourseDetails, { foreignKey: "courseId", as: "details" });
+  CourseDetails.belongsTo(Course, { foreignKey: "courseId", as: "course" });
 
   //--------------------------
   // COURSE ↔ BATCH

@@ -48,9 +48,9 @@ const eventController = {
 
   uploadEventImage: async (req, res) => {
     try {
-      const files = req.files?.files || [];
+      const files = req.files;
 
-      if (!files.length) {
+      if (!files || !files.length) {
         throw new Error("No files uploaded");
       }
 
