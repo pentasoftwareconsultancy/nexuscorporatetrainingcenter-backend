@@ -240,3 +240,45 @@ export const getAllUsers = async (req, res) => {
     });
   }
 };
+
+/* ADMIN UPDATE USER */
+export const updateUserByAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      userName,
+      emailOrPhone,
+      phoneNumber,
+      role,
+      password
+    } = req.body;
+
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const updatedData = {};
+
+    if (userName) updatedData.userName = userName;
+    if (emailOrPhone) updatedData.emailOrPhone = emailOrPhone;
+    if (phoneNumber) updatedData.phoneNumber = phoneNumber;
+    if (role) updatedData.role = role;
+
+    if (password) {
+      updatedData.password = await bcrypt.hash(password, 12);
+    }
+
+    await User.update(updatedData, { where: { id } });
+
+    res.json({
+      message: "User updated successfully by admin",
+      updatedFields: Object.keys(updatedData),
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error updating user",
+      error: error.message,
+    });
+  }
+};
