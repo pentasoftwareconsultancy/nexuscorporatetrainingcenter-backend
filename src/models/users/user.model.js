@@ -1,34 +1,66 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../config/db.js";
 
-const User = sequelize.define("User", {
-  id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+const User = sequelize.define(
+  "User",
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
 
-  emailOrPhone: { type: DataTypes.STRING, allowNull: false, unique: true },
+    /* USERNAME */
+    userName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
 
-  password: { type: DataTypes.STRING, allowNull: false },
+    /* EMAIL OR LOGIN IDENTIFIER */
+    emailOrPhone: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
 
-  role: { type: DataTypes.ENUM("admin","user"), defaultValue: "user" },
-  
+    /* PHONE NUMBER */
+    phoneNumber: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
 
- passwordRecoveryQuestion: {
-  type: DataTypes.STRING,
-  allowNull: true
-},
+    /* PASSWORD */
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
 
-passwordRecoveryAnswer: {
-  type: DataTypes.STRING,
-  allowNull: true
-},
+    /* ROLE */
+    role: {
+      type: DataTypes.ENUM("admin", "user"),
+      defaultValue: "user",
+    },
 
-isAnswerVerified: {
-  type: DataTypes.BOOLEAN,
-  defaultValue: false
-},
-}, {
-  tableName: "Users",
-  timestamps: true
+    /* PASSWORD RECOVERY */
+    passwordRecoveryQuestion: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
 
-});
+    passwordRecoveryAnswer: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+
+    isAnswerVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+  },
+  {
+    tableName: "Users",
+    timestamps: true,
+  }
+);
 
 export default User;

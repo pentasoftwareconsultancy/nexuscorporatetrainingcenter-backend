@@ -39,6 +39,15 @@ const mediaController = {
     }
   },
 
+  getCollegeById: async (req, res) => {
+    try {
+      const data = await mediaService.getCollegeById(req.params.id);
+      res.json({ success: true, data });
+    } catch (err) {
+      res.status(404).json({ success: false, message: err.message });
+    }
+  },
+
   /* ========== IMAGES (MULTIPLE) ========== */
   uploadImage: async (req, res) => {
     try {

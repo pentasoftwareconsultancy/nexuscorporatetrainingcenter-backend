@@ -26,6 +26,18 @@ class MediaService {
     });
   }
 
+  async getCollegeById(collegeId) {
+    const college = await College.findByPk(collegeId, {
+      include: [
+        { model: City, as: "city" },
+        { model: Media, as: "images" },
+      ],
+    });
+  
+    if (!college) throw new Error("College not found");
+    return college;
+  }
+
   /* ========== MEDIA / IMAGES (MULTIPLE) ========== */
   async uploadImages(collegeId, files, caption, description) {
     const uploadedImages = [];
