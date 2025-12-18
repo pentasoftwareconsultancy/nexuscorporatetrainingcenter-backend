@@ -6,7 +6,8 @@ import {
   forgotPassword,
   verifyRecoveryAnswer,
   resetPassword,
-  getAllUsers
+  getAllUsers,
+  updateUserByAdmin
 } from "../../controllers/users/auth.controller.js";
 
 import { protect } from "../../middlewares/auth.middleware.js";
@@ -32,5 +33,6 @@ router.get("/users", pagination, getAllUsers);
    res.status(200).json({ message: "Welcome user!" });
  });
 
+ router.put( "/admin/users/:id", protect, authorizRole("admin"), updateUserByAdmin );
 
 export default router;

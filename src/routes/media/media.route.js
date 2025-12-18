@@ -13,6 +13,7 @@ router.get("/city", mediaController.getCities);
 /* COLLEGE */
 router.post("/college", mediaController.createCollege);
 router.get("/college/:cityId", mediaController.getCollegesByCity);
+router.get("/college/single/:id", mediaController.getCollegeById);
 
 /* IMAGES (MULTIPLE) */
 router.post(
