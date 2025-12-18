@@ -1,12 +1,15 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../../models/users/user.model.js";
+import { Op } from "sequelize";
 
 /* REGISTER */
 export const register = async (req, res) => {
   try {
     const {
+      userName,
       emailOrPhone,
+      phoneNumber,
       password,
       confirmPassword,
       role,
@@ -14,24 +17,62 @@ export const register = async (req, res) => {
       passwordRecoveryAnswer,
     } = req.body;
 
+    /* Required field check */
+    if (!userName || !emailOrPhone || !phoneNumber || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    /* Password match check */
     if (password !== confirmPassword) {
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
+    /* Check existing user (email OR phone) */
+    const existingUser = await User.findOne({
+      where: {
+        [Op.or]: [
+          { emailOrPhone },
+          { phoneNumber }
+        ],
+      },
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: "User already exists with this email or phone number",
+      });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 12);
-    const hashedAnswer = await bcrypt.hash(passwordRecoveryAnswer, 12);
+    const hashedAnswer = passwordRecoveryAnswer
+  ? await bcrypt.hash(passwordRecoveryAnswer, 12)
+  : null;
 
     const user = await User.create({
+      userName,
       emailOrPhone,
+      phoneNumber,
       password: hashedPassword,
       role,
       passwordRecoveryQuestion,
       passwordRecoveryAnswer: hashedAnswer,
     });
 
-    res.json({ message: "User registered", user });
+    res.status(201).json({
+      message: "User registered successfully",
+      user: {
+        id: user.id,
+        userName: user.userName,
+        emailOrPhone: user.emailOrPhone,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+      },
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error registering", error });
+    res.status(500).json({
+      message: "Error registering user",
+      error: error.message,
+    });
   }
 };
 
@@ -52,7 +93,17 @@ export const login = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.json({ message: "Login successful", token, user });
+    res.json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user.id,
+        userName: user.userName,
+        emailOrPhone: user.emailOrPhone,
+        phoneNumber: user.phoneNumber,
+        role: user.role,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: "Error logging in", error });
   }
@@ -71,6 +122,10 @@ export const changePassword = async (req, res) => {
     const user = await User.findByPk(req.user.id);
 
     const match = await bcrypt.compare(oldPassword, user.password);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     if (!match)
       return res.status(400).json({ message: "Incorrect old password" });
 
@@ -159,7 +214,13 @@ export const getAllUsers = async (req, res) => {
 
     const users = await User.findAndCountAll({
       where,
-      attributes: ["id", "emailOrPhone", "role", "createdAt"],
+      attributes: ["id",
+        "userName",
+        "emailOrPhone",
+        "phoneNumber",
+        "role",
+        "createdAt",
+      ],
       limit,
       offset,
       order: [["createdAt", "DESC"]],
@@ -175,6 +236,48 @@ export const getAllUsers = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Error fetching users",
+      error: error.message,
+    });
+  }
+};
+
+/* ADMIN UPDATE USER */
+export const updateUserByAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      userName,
+      emailOrPhone,
+      phoneNumber,
+      role,
+      password
+    } = req.body;
+
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const updatedData = {};
+
+    if (userName) updatedData.userName = userName;
+    if (emailOrPhone) updatedData.emailOrPhone = emailOrPhone;
+    if (phoneNumber) updatedData.phoneNumber = phoneNumber;
+    if (role) updatedData.role = role;
+
+    if (password) {
+      updatedData.password = await bcrypt.hash(password, 12);
+    }
+
+    await User.update(updatedData, { where: { id } });
+
+    res.json({
+      message: "User updated successfully by admin",
+      updatedFields: Object.keys(updatedData),
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error updating user",
       error: error.message,
     });
   }
