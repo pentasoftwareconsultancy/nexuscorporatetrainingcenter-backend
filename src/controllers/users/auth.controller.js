@@ -253,11 +253,32 @@ export const updateUserByAdmin = async (req, res) => {
       password
     } = req.body;
 
+    // 1️⃣ Check user exists
     const user = await User.findByPk(id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // 2️⃣ 🔒 Check duplicate email or phone (EXCEPT current user)
+    if (emailOrPhone || phoneNumber) {
+      const existingUser = await User.findOne({
+        where: {
+          id: { [Op.ne]: id },
+          [Op.or]: [
+            emailOrPhone ? { emailOrPhone } : null,
+            phoneNumber ? { phoneNumber } : null,
+          ].filter(Boolean),
+        },
+      });
+
+      if (existingUser) {
+        return res.status(400).json({
+          message: "Email or phone already in use by another user",
+        });
+      }
+    }
+
+    // 3️⃣ Prepare update data
     const updatedData = {};
 
     if (userName) updatedData.userName = userName;
@@ -269,6 +290,7 @@ export const updateUserByAdmin = async (req, res) => {
       updatedData.password = await bcrypt.hash(password, 12);
     }
 
+    // 4️⃣ Update user
     await User.update(updatedData, { where: { id } });
 
     res.json({
@@ -279,6 +301,36 @@ export const updateUserByAdmin = async (req, res) => {
     res.status(500).json({
       message: "Error updating user",
       error: error.message,
+    });
+  }
+};
+
+/* GET LOGGED IN USER (USING TOKEN) */
+export const getLoggedInUser = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id, {
+      attributes: [
+        "id",
+        "userName",
+        "emailOrPhone",
+        "phoneNumber",
+        "role",
+        "createdAt"
+      ],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      message: "Logged in user fetched",
+      user
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching logged in user",
+      error: error.message
     });
   }
 };
