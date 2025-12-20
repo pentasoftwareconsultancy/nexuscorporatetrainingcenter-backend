@@ -99,6 +99,8 @@ async getFullPlacementById(placementId) {
       package: data.package,
       image: uploadedImage?.secure_url || null,
       cloudinaryId: uploadedImage?.public_id || null,
+      email: data.email,       
+      duration: data.duration,
     });
   }
   
@@ -161,6 +163,8 @@ async getFullPlacementById(placementId) {
       package: newData.package ?? placement.package,
       image: updatedImage,
       cloudinaryId: updatedCloudId,
+      email: newData.email ?? placement.email,       
+      duration: newData.duration ?? placement.duration, 
     });
 
     return placement;
