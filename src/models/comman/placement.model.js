@@ -78,6 +78,16 @@ export const Placement = sequelize.define(
     package: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+
+    duration: {
+      type: DataTypes.STRING,
+      allowNull: false,
     }
   },
   {
@@ -152,20 +162,10 @@ Placement.belongsTo(PlacementCategory, {
   foreignKey: "placementCategoryId",
 });
 
-// Placement → Details (1:1)
-// Placement.hasOne(PlacementDetails, {
-//   foreignKey: "placement_id",
-// });
-
 Placement.hasOne(PlacementDetails, {
   foreignKey: "placement_id",
   as: "details"   // 👈 alias should be "details"
 });
-
-
-// PlacementDetails.belongsTo(Placement, {
-//   foreignKey: "placement_id",
-// });
 
 PlacementDetails.belongsTo(Placement, {
   foreignKey: "placement_id",

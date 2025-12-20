@@ -7,7 +7,8 @@ import {
   verifyRecoveryAnswer,
   resetPassword,
   getAllUsers,
-  updateUserByAdmin
+  updateUserByAdmin,
+  getLoggedInUser
 } from "../../controllers/users/auth.controller.js";
 
 import { protect } from "../../middlewares/auth.middleware.js";
@@ -34,5 +35,7 @@ router.get("/users", pagination, getAllUsers);
  });
 
  router.put( "/admin/users/:id", protect, authorizRole("admin"), updateUserByAdmin );
+
+ router.get("/me", protect, getLoggedInUser);
 
 export default router;
