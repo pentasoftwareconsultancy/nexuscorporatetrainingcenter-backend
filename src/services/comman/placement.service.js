@@ -219,7 +219,11 @@ async getFullPlacementById(placementId) {
     });
   }
 
- 
+  async deletePlacementDetails(id) {
+    return await PlacementDetails.destroy({
+      where: { placement_id: id },
+    });
+  }
 
 
   /* ---------------- YEAR-WISE REPORT ---------------- */
