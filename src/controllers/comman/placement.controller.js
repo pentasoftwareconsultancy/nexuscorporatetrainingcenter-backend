@@ -207,6 +207,14 @@ export const getFullPlacementById = async (req, res) => {
   }
 };
 
+export const deletePlacementDetails = async (req, res) => {
+  try {
+    await placementService.deletePlacementDetails(req.params.id);
+    res.json({ message: "Category deleted" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 /* ---------------- YEAR-WISE ---------------- */
 export const getPlacementYearWise = async (req, res) => {
