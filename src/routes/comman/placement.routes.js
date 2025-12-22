@@ -17,6 +17,7 @@ import {
   getAllPlacementDetails,
   getCategoryYearWisePlacements,
   getFullPlacementById,
+  deletePlacementDetails
 } from "../../controllers/comman/placement.controller.js";
 
 
@@ -50,6 +51,7 @@ router.get("/details/:id", getPlacementDetails); //done
 router.post("/details", protect, adminOnly, createPlacementDetails); //done
 router.put("/details/:id", protect, adminOnly, updatePlacementDetails); //done
 router.get("/full/:placementId", getFullPlacementById);
+router.delete("/details/:id", protect, deletePlacementDetails);
 
 /* ---------------- YEAR-WISE ---------------- */
 router.get("/reports/year-wise", getPlacementYearWise); //done
