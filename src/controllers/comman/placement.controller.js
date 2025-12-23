@@ -225,3 +225,82 @@ export const getPlacementYearWise = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+/* ---------------- ALL PLACEMENTS DETAILS ---------------- */
+export const getAllPlacementData = async (req, res) => {
+  try {
+    const data = await placementService.getAllPlacementDataByPlacementId(
+      req.params.id
+    );
+
+    if (!data) {
+      return res.status(404).json({ message: "Placement not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const updateFullPlacement = async (req, res) => {
+  try {
+    console.log("========= POSTMAN DEBUG =========");
+console.log("HEADERS:", req.headers);
+console.log("BODY:", req.body);
+console.log("FILE:", req.file);
+console.log("=================================");
+
+    const placementId = req.params.placementId;
+    const filePath = req.file?.path;
+
+    const data = await placementService.updateFullPlacement(
+      placementId,
+      req.body,
+      filePath
+    );
+
+    if (!data) {
+      return res.status(404).json({ success: false, message: "Not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Placement updated successfully",
+      data,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const createFullPlacement = async (req, res) => {
+  try {
+    console.log("========= POSTMAN DEBUG =========");
+console.log("HEADERS:", req.headers);
+console.log("BODY:", req.body);
+console.log("FILE:", req.file);
+console.log("=================================");
+
+    const filePath = req.file?.path;
+
+    const data = await placementService.createFullPlacement(
+      req.body,
+      filePath
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Placement created successfully",
+      data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
