@@ -1,4 +1,5 @@
 import cloudinary from "../../config/cloudinary.js";
+import { sequelize } from "../../config/db.js";
 
 import {
   Placement,
@@ -31,53 +32,52 @@ class PlacementService {
 
   /* ---------------- PLACEMENTS ---------------- */
 
-async getCategoryYearWisePlacements() {
-  const rows = await Placement.findAll({
-    attributes: [
-      "placement_id",
-      "student_name",
-      "company_name",
-      "company_role",
-      "course",
-      "package",
-      "image",
-      "year"
-    ],
-    include: [
-      {
-        model: PlacementCategory,
-        attributes: ["name"]
-      }
-    ],
-    order: [["year", "DESC"]]
-  });
+  async getCategoryYearWisePlacements() {
+    const rows = await Placement.findAll({
+      attributes: [
+        "placement_id",
+        "student_name",
+        "company_name",
+        "company_role",
+        "course",
+        "package",
+        "image",
+        "year",
+      ],
+      include: [
+        {
+          model: PlacementCategory,
+          attributes: ["name"],
+        },
+      ],
+      order: [["year", "DESC"]],
+    });
 
-  const result = {};
+    const result = {};
 
-  rows.forEach(p => {
-    const category = p.PlacementCategory.name;
-    const year = p.year;
+    rows.forEach((p) => {
+      const category = p.PlacementCategory.name;
+      const year = p.year;
 
-    if (!result[category]) result[category] = {};
-    if (!result[category][year]) result[category][year] = [];
+      if (!result[category]) result[category] = {};
+      if (!result[category][year]) result[category][year] = [];
 
-    result[category][year].push(p);
-  });
+      result[category][year].push(p);
+    });
 
-  return result;
-}
+    return result;
+  }
 
-async getFullPlacementById(placementId) {
-  return await Placement.findByPk(placementId, {
-    include: [
-      {
-        model: PlacementDetails,
-        as: "details"
-      }
-    ]
-  });
-}
-
+  async getFullPlacementById(placementId) {
+    return await Placement.findByPk(placementId, {
+      include: [
+        {
+          model: PlacementDetails,
+          as: "details",
+        },
+      ],
+    });
+  }
 
   /* ================= CREATE PLACEMENT ================= */
   async createPlacement(data, filePath) {
@@ -99,11 +99,10 @@ async getFullPlacementById(placementId) {
       package: data.package,
       image: uploadedImage?.secure_url || null,
       cloudinaryId: uploadedImage?.public_id || null,
-      email: data.email,       
+      email: data.email,
       duration: data.duration,
     });
   }
-  
 
   /* ================= GET ALL ================= */
   async getAllPlacements(search, limit, offset) {
@@ -154,7 +153,8 @@ async getFullPlacementById(placementId) {
     }
 
     await placement.update({
-      placementCategoryId: newData.placementCategoryId ?? placement.placementCategoryId,
+      placementCategoryId:
+        newData.placementCategoryId ?? placement.placementCategoryId,
       student_name: newData.student_name ?? placement.student_name,
       company_name: newData.company_name ?? placement.company_name,
       company_role: newData.company_role ?? placement.company_role,
@@ -163,8 +163,8 @@ async getFullPlacementById(placementId) {
       package: newData.package ?? placement.package,
       image: updatedImage,
       cloudinaryId: updatedCloudId,
-      email: newData.email ?? placement.email,       
-      duration: newData.duration ?? placement.duration, 
+      email: newData.email ?? placement.email,
+      duration: newData.duration ?? placement.duration,
     });
 
     return placement;
@@ -183,35 +183,33 @@ async getFullPlacementById(placementId) {
     return true;
   }
 
-
-
   /* ---------------- DETAILS (1:1) ---------------- */
   async createPlacementDetails(data) {
     return await PlacementDetails.create(data);
   }
 
   async getAllPlacementDetails() {
-  return await PlacementDetails.findAll({
-    include: [
-      {
-        model: Placement,
-        as: "placement"  // 👈 MUST MATCH association alias
-      }
-    ],
-  });
-}
+    return await PlacementDetails.findAll({
+      include: [
+        {
+          model: Placement,
+          as: "placement", // 👈 MUST MATCH association alias
+        },
+      ],
+    });
+  }
 
- async getPlacementDetails(placementId) {
-  return await PlacementDetails.findOne({
-    where: { placement_id: placementId },
-    include: [
-      {
-        model: Placement,
-        as: "placement"  // 👈 SAME alias
-      }
-    ]
-  });
-}
+  async getPlacementDetails(placementId) {
+    return await PlacementDetails.findOne({
+      where: { placement_id: placementId },
+      include: [
+        {
+          model: Placement,
+          as: "placement", // 👈 SAME alias
+        },
+      ],
+    });
+  }
 
   async updatePlacementDetails(id, data) {
     return await PlacementDetails.update(data, {
@@ -225,17 +223,182 @@ async getFullPlacementById(placementId) {
     });
   }
 
-
   /* ---------------- YEAR-WISE REPORT ---------------- */
- async getYearWisePlacement() {
-  return await Placement.findAll({
-    attributes: [
-      [Sequelize.fn("YEAR", Sequelize.col("Placement.createdAt")), "year"],
-      [Sequelize.fn("COUNT", Sequelize.col("Placement.placement_id")), "total"],
-    ],
-    group: [Sequelize.fn("YEAR", Sequelize.col("Placement.createdAt"))],
-    order: [[Sequelize.literal("year"), "DESC"]],
-  });
-}
+  async getYearWisePlacement() {
+    return await Placement.findAll({
+      attributes: [
+        [Sequelize.fn("YEAR", Sequelize.col("Placement.createdAt")), "year"],
+        [
+          Sequelize.fn("COUNT", Sequelize.col("Placement.placement_id")),
+          "total",
+        ],
+      ],
+      group: [Sequelize.fn("YEAR", Sequelize.col("Placement.createdAt"))],
+      order: [[Sequelize.literal("year"), "DESC"]],
+    });
+  }
+
+  /* ---------------- ALL PLACEMENT DATA ---------------- */
+  async getAllPlacementDataByPlacementId(placementId) {
+    return await Placement.findOne({
+      where: { placement_id: placementId },
+      include: [
+        {
+          model: PlacementCategory,
+          attributes: ["placementCategoryId", "name"],
+        },
+        {
+          model: PlacementDetails,
+          as: "details",
+          attributes: [
+            "placementDetails_id",
+            "success_story",
+            "facing_challenges",
+            "program_highlights",
+            "final_evaluation",
+            "overall_experience",
+          ],
+        },
+      ],
+    });
+  }
+
+  async updateFullPlacement(placementId, body, filePath) {
+    const transaction = await sequelize.transaction();
+
+    try {
+      const placement = await Placement.findByPk(placementId, {
+        include: [{ model: PlacementDetails, as: "details" }],
+        transaction,
+      });
+
+      if (!placement) return null;
+
+      /* ---------- IMAGE UPDATE ---------- */
+      let image = placement.image;
+      let cloudinaryId = placement.cloudinaryId;
+
+      if (filePath) {
+        if (cloudinaryId) {
+          await cloudinary.uploader.destroy(cloudinaryId);
+        }
+
+        const upload = await cloudinary.uploader.upload(filePath, {
+          folder: "nexus/placements",
+        });
+
+        image = upload.secure_url;
+        cloudinaryId = upload.public_id;
+      }
+
+      /* ---------- UPDATE PLACEMENT ---------- */
+      if (body.placement) {
+        await placement.update(
+          {
+            ...body.placement,
+            image,
+            cloudinaryId,
+          },
+          { transaction }
+        );
+      }
+
+      /* ---------- UPDATE DETAILS ---------- */
+      if (body.details) {
+        if (placement.details) {
+          await placement.details.update(body.details, { transaction });
+        } else {
+          await PlacementDetails.create(
+            {
+              placement_id: placementId,
+              ...body.details,
+            },
+            { transaction }
+          );
+        }
+      }
+
+      await transaction.commit();
+
+      return await Placement.findByPk(placementId, {
+        include: [
+          { model: PlacementCategory },
+          { model: PlacementDetails, as: "details" },
+        ],
+      });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
+
+  async createFullPlacement(body, filePath) {
+    const transaction = await sequelize.transaction();
+
+    try {
+      const { category, placement, details } = body;
+
+      /* ---------- 1. CATEGORY CHECK / CREATE ---------- */
+      let categoryRecord = await PlacementCategory.findOne({
+        where: { name: category.name },
+        transaction,
+      });
+
+      if (!categoryRecord) {
+        categoryRecord = await PlacementCategory.create(
+          { name: category.name },
+          { transaction }
+        );
+      }
+
+      /* ---------- 2. IMAGE UPLOAD ---------- */
+      let image = null;
+      let cloudinaryId = null;
+
+      if (filePath) {
+        const upload = await cloudinary.uploader.upload(filePath, {
+          folder: "nexus/placements",
+        });
+
+        image = upload.secure_url;
+        cloudinaryId = upload.public_id;
+      }
+
+      /* ---------- 3. CREATE PLACEMENT ---------- */
+      const placementRecord = await Placement.create(
+        {
+          placementCategoryId: categoryRecord.placementCategoryId,
+          ...placement,
+          image,
+          cloudinaryId,
+        },
+        { transaction }
+      );
+
+      /* ---------- 4. CREATE DETAILS ---------- */
+      if (details) {
+        await PlacementDetails.create(
+          {
+            placement_id: placementRecord.placement_id,
+            ...details,
+          },
+          { transaction }
+        );
+      }
+
+      await transaction.commit();
+
+      /* ---------- 5. RETURN FULL OBJECT ---------- */
+      return await Placement.findByPk(placementRecord.placement_id, {
+        include: [
+          { model: PlacementCategory },
+          { model: PlacementDetails, as: "details" },
+        ],
+      });
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
 }
 export default new PlacementService();
