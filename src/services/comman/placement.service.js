@@ -301,6 +301,25 @@ class PlacementService {
           },
           { transaction }
         );
+      } else {
+        // 🔥 Support FLAT BODY (POSTMAN / old frontend)
+        await placement.update(
+          {
+            placementCategoryId:
+              body.placementCategoryId ?? placement.placementCategoryId,
+            student_name: body.student_name ?? placement.student_name,
+            company_name: body.company_name ?? placement.company_name,
+            company_role: body.company_role ?? placement.company_role,
+            course: body.course ?? placement.course,
+            year: body.year ?? placement.year,
+            package: body.package ?? placement.package,
+            email: body.email ?? placement.email,
+            duration: body.duration ?? placement.duration,
+            image,
+            cloudinaryId,
+          },
+          { transaction }
+        );
       }
 
       /* ---------- UPDATE DETAILS ---------- */
@@ -336,22 +355,7 @@ class PlacementService {
     const transaction = await sequelize.transaction();
 
     try {
-      const { category, placement, details } = body;
-
-      /* ---------- 1. CATEGORY CHECK / CREATE ---------- */
-      let categoryRecord = await PlacementCategory.findOne({
-        where: { name: category.name },
-        transaction,
-      });
-
-      if (!categoryRecord) {
-        categoryRecord = await PlacementCategory.create(
-          { name: category.name },
-          { transaction }
-        );
-      }
-
-      /* ---------- 2. IMAGE UPLOAD ---------- */
+      /* ---------- IMAGE UPLOAD ---------- */
       let image = null;
       let cloudinaryId = null;
 
@@ -364,23 +368,30 @@ class PlacementService {
         cloudinaryId = upload.public_id;
       }
 
-      /* ---------- 3. CREATE PLACEMENT ---------- */
+      /* ---------- CREATE PLACEMENT ---------- */
       const placementRecord = await Placement.create(
         {
-          placementCategoryId: categoryRecord.placementCategoryId,
-          ...placement,
+          placementCategoryId: body.placementCategoryId,
+          student_name: body.student_name,
+          company_name: body.company_name,
+          company_role: body.company_role,
+          course: body.course,
+          year: body.year,
+          package: body.package,
+          email: body.email,
+          duration: body.duration,
           image,
           cloudinaryId,
         },
         { transaction }
       );
 
-      /* ---------- 4. CREATE DETAILS ---------- */
-      if (details) {
+      /* ---------- CREATE DETAILS ---------- */
+      if (body.details) {
         await PlacementDetails.create(
           {
             placement_id: placementRecord.placement_id,
-            ...details,
+            ...body.details,
           },
           { transaction }
         );
@@ -388,17 +399,45 @@ class PlacementService {
 
       await transaction.commit();
 
-      /* ---------- 5. RETURN FULL OBJECT ---------- */
+      /* ---------- RETURN FULL DATA ---------- */
       return await Placement.findByPk(placementRecord.placement_id, {
-        include: [
-          { model: PlacementCategory },
-          { model: PlacementDetails, as: "details" },
-        ],
+        include: [{ model: PlacementDetails, as: "details" }],
       });
     } catch (error) {
       await transaction.rollback();
       throw error;
     }
   }
+  
+  async deleteFullPlacement(placementId) {
+    const transaction = await sequelize.transaction();
+  
+    try {
+      const placement = await Placement.findByPk(placementId, {
+        transaction,
+      });
+  
+      if (!placement) return null;
+  
+      // 🔥 If image exists → delete from Cloudinary
+      if (placement.cloudinaryId) {
+        try {
+          await cloudinary.uploader.destroy(placement.cloudinaryId);
+        } catch (e) {
+          console.log("⚠️ Cloudinary delete failed", e);
+        }
+      }
+  
+      // 🔥 Delete placement (details auto deleted via CASCADE)
+      await placement.destroy({ transaction });
+  
+      await transaction.commit();
+      return true;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
 }
+
 export default new PlacementService();
