@@ -42,7 +42,10 @@ export const createPlacement = async (req, res) => {
   try {
     const filePath = req.file?.path;
 
-    const newPlacement = await placementService.createPlacement(req.body, filePath);
+    const newPlacement = await placementService.createPlacement(
+      req.body,
+      filePath
+    );
 
     res.status(201).json({
       success: true,
@@ -57,7 +60,11 @@ export const createPlacement = async (req, res) => {
 export const getAllPlacements = async (req, res) => {
   try {
     const { search } = req.query;
-    const data = await placementService.getAllPlacements(search, req.limit, req.offset);
+    const data = await placementService.getAllPlacements(
+      search,
+      req.limit,
+      req.offset
+    );
 
     res.json({
       success: true,
@@ -93,7 +100,9 @@ export const updatePlacement = async (req, res) => {
     );
 
     if (!updated) {
-      return res.status(404).json({ success: false, message: "Placement not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Placement not found" });
     }
 
     res.json({
@@ -111,7 +120,9 @@ export const deletePlacement = async (req, res) => {
     const deleted = await placementService.deletePlacement(req.params.id);
 
     if (!deleted) {
-      return res.status(404).json({ success: false, message: "Placement not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Placement not found" });
     }
 
     res.json({ success: true, message: "Placement deleted successfully" });
@@ -128,7 +139,6 @@ export const getCategoryYearWisePlacements = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-
 
 /* ---------------- DETAILS ---------------- */
 export const createPlacementDetails = async (req, res) => {
@@ -149,11 +159,10 @@ export const getAllPlacementDetails = async (req, res) => {
   }
 };
 
-
 export const getPlacementDetails = async (req, res) => {
   try {
     const data = await placementService.getPlacementDetails(req.params.id);
-   console.log(data)
+    console.log(data);
     if (!data) {
       return res.status(404).json({ message: "Not found" });
     }
@@ -197,8 +206,8 @@ export const getFullPlacementById = async (req, res) => {
         facing_challenges: placement.details?.facing_challenges || null,
         program_highlights: placement.details?.program_highlights || null,
         final_evaluation: placement.details?.final_evaluation || null,
-        overall_experience: placement.details?.overall_experience || null
-      }
+        overall_experience: placement.details?.overall_experience || null,
+      },
     };
 
     res.json({ success: true, data });
@@ -249,13 +258,18 @@ export const getAllPlacementData = async (req, res) => {
 export const updateFullPlacement = async (req, res) => {
   try {
     console.log("========= POSTMAN DEBUG =========");
-console.log("HEADERS:", req.headers);
-console.log("BODY:", req.body);
-console.log("FILE:", req.file);
-console.log("=================================");
+    console.log("HEADERS:", req.headers);
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
+    console.log("=================================");
 
     const placementId = req.params.placementId;
     const filePath = req.file?.path;
+
+    // ⭐ IMPORTANT FIX
+    if (req.body.details && typeof req.body.details === "string") {
+      req.body.details = JSON.parse(req.body.details);
+    }
 
     const data = await placementService.updateFullPlacement(
       placementId,
@@ -279,25 +293,59 @@ console.log("=================================");
 
 export const createFullPlacement = async (req, res) => {
   try {
-    console.log("========= POSTMAN DEBUG =========");
-console.log("HEADERS:", req.headers);
-console.log("BODY:", req.body);
-console.log("FILE:", req.file);
-console.log("=================================");
+    console.log("========= CREATE DEBUG =========");
+    console.log("HEADERS:", req.headers);
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
+    console.log("================================");
 
     const filePath = req.file?.path;
 
-    const data = await placementService.createFullPlacement(
-      req.body,
-      filePath
-    );
+    // Parse details if coming as JSON string
+    if (req.body.details && typeof req.body.details === "string") {
+      try {
+        req.body.details = JSON.parse(req.body.details);
+      } catch (e) {
+        console.log("❌ DETAILS JSON PARSE FAILED");
+      }
+    }
+
+    const data = await placementService.createFullPlacement(req.body, filePath);
 
     res.status(201).json({
       success: true,
       message: "Placement created successfully",
       data,
     });
+
   } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const deleteFullPlacement = async (req, res) => {
+  try {
+    const placementId = req.params.placementId;
+
+    const deleted = await placementService.deleteFullPlacement(placementId);
+
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        message: "Placement not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Placement deleted successfully",
+    });
+  } catch (error) {
+    console.log(error);
     res.status(500).json({
       success: false,
       message: error.message,
