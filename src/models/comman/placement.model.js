@@ -15,6 +15,7 @@ export const PlacementCategory = sequelize.define(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     }
   },
   {
@@ -148,27 +149,3 @@ export const PlacementDetails = sequelize.define(
     timestamps: true,
   }
 );
-
-/* ============================================================
-   MODEL RELATIONSHIPS (IMPORTANT)
-============================================================ */
-
-// Category → Placements (1:N)
-PlacementCategory.hasMany(Placement, {
-  foreignKey: "placementCategoryId",
-});
-
-Placement.belongsTo(PlacementCategory, {
-  foreignKey: "placementCategoryId",
-});
-
-Placement.hasOne(PlacementDetails, {
-  foreignKey: "placement_id",
-  as: "details"   // 👈 alias should be "details"
-});
-
-PlacementDetails.belongsTo(Placement, {
-  foreignKey: "placement_id",
-  as: "placement"   // 👈 alias should be "placement"
-});
-

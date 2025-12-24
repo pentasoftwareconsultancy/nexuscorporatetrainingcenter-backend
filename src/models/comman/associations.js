@@ -15,6 +15,11 @@ import {
   UserAnswer,
   UserTest,
 } from "../test/test.models.js";
+import {
+  PlacementCategory,
+  Placement,
+  PlacementDetails,
+} from "../comman/placement.model.js";
 
 export function setupAssociations() {
   /* COURSE CATEGORY → COURSE */
@@ -135,3 +140,26 @@ export function setupAssociations() {
   Option.hasMany(UserAnswer, { foreignKey: "optionId" });
   UserAnswer.belongsTo(Option, { foreignKey: "optionId" });
 }
+
+/* ============================================================
+   MODEL RELATIONSHIPS (IMPORTANT)
+============================================================ */
+
+// Category → Placements (1:N)
+PlacementCategory.hasMany(Placement, {
+  foreignKey: "placementCategoryId",
+});
+
+Placement.belongsTo(PlacementCategory, {
+  foreignKey: "placementCategoryId",
+});
+
+Placement.hasOne(PlacementDetails, {
+  foreignKey: "placement_id",
+  as: "details", // 👈 alias should be "details"
+});
+
+PlacementDetails.belongsTo(Placement, {
+  foreignKey: "placement_id",
+  as: "placement", // 👈 alias should be "placement"
+});
