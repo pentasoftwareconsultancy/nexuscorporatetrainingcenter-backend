@@ -20,7 +20,8 @@ import {
   deletePlacementDetails,
   getAllPlacementData,
   updateFullPlacement,
-  createFullPlacement
+  createFullPlacement,
+  deleteFullPlacement
 } from "../../controllers/comman/placement.controller.js";
 
 
@@ -61,7 +62,8 @@ router.get("/reports/year-wise", getPlacementYearWise); //done
 
 /* ---------------- ALL PLACEMENTS DETAILS ---------------- */
 router.get("/allplacementdata/:id", getAllPlacementData);
-router.put( "/full/:placementId", protect, adminOnly, upload.single("file"), updateFullPlacement);
 router.post( "/full", protect, adminOnly, upload.single("file"), createFullPlacement);
+router.put( "/full/:placementId", protect, adminOnly, upload.single("file"), updateFullPlacement);
+router.delete( "/full/:placementId", protect, adminOnly, deleteFullPlacement);
 
 export default router;
