@@ -5,14 +5,14 @@ import eventController from "../../controllers/events/event.controller.js";
 
 const router = express.Router();
 
-// EVENTS
+// EVENTS Dont use this
 router.post("/gallery", protect, eventController.createEvent);
 router.get("/gallery", eventController.getAllEvents);
 router.get("/gallery/:id", eventController.getEventById);
 router.put("/gallery/:id", protect, eventController.updateEvent);
 router.delete("/gallery/:id", protect, eventController.deleteEvent);
 
-// EVENT IMAGES (MULTIPLE FILE UPLOAD)
+// EVENT IMAGES (MULTIPLE FILE UPLOAD) dont use this
 router.post(
   "/upload",
   protect,
