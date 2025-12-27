@@ -6,34 +6,25 @@ import { protect } from "../../middlewares/auth.middleware.js";
 const router = express.Router();
 const upload = multer({ dest: "uploads/" });
 
-/* CITY */
-router.post("/city", mediaController.createCity);
-router.get("/city", mediaController.getCities);
+/*
+  ONE API FOR EVERYTHING
+*/
 
-/* COLLEGE */
-router.post("/college", mediaController.createCollege);
-router.get("/college/:cityId", mediaController.getCollegesByCity);
-router.get("/college/single/:id", mediaController.getCollegeById);
-
-/* IMAGES (MULTIPLE) */
 router.post(
-  "/image/upload",
-  upload.array("files", 10), // ✅ MULTIPLE FILES
-  mediaController.uploadImage
+  "/CreateMedia",
+  upload.array("files", 10),
+  mediaController.handleCreate
 );
 
-router.get("/image/:collegeId", mediaController.getImagesByCollege);
+router.get("/GetMedia", mediaController.handleGet);
 
-/* ===================== CITY ===================== */
-router.put("/city/:id", protect, mediaController.updateCity);
-router.delete("/city/:id", protect, mediaController.deleteCity);
+router.put(
+  "/UpdateMedia",
+  protect,
+  upload.array("files", 1),
+  mediaController.handleUpdate
+);
 
-/* ===================== COLLEGE ===================== */
-router.put("/college/:id", protect, mediaController.updateCollege);
-router.delete("/college/:id", protect, mediaController.deleteCollege);
-
-/* ===================== MEDIA ===================== */
-router.put("/media/:id", protect, mediaController.updateMedia);
-router.delete("/media/:id", protect, mediaController.deleteMedia);
+router.delete("/DeleteMedia", protect, mediaController.handleDelete);
 
 export default router;

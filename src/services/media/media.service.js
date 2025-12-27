@@ -2,126 +2,157 @@ import cloudinary from "../../config/cloudinary.js";
 import { City, College, Media } from "../../models/media/media.models.js";
 
 class MediaService {
-  /* ========== CITY ========== */
-  async createCity(body) {
-    return await City.create(body);
+  /* ================= CREATE ================= */
+  async create(body, files) {
+    const { type } = body;
+
+    if (type === "city") {
+      const name = body.name.trim().toLowerCase();
+
+      const exists = await City.findOne({ where: { name } });
+      if (exists) throw new Error("City already exists");
+
+      return await City.create({ name });
+    }
+
+    if (type === "college") {
+      return await College.create({
+        name: body.name,
+        cityId: body.cityId,
+      });
+    }
+
+    if (type === "media") {
+      const cityName = body.cityName.trim().toLowerCase();
+
+      let city = await City.findOne({ where: { name: cityName } });
+      if (!city) city = await City.create({ name: cityName });
+
+      let college = await College.findOne({
+        where: { name: body.collegeName, cityId: city.id },
+      });
+
+      if (!college) {
+        college = await College.create({
+          name: body.collegeName,
+          cityId: city.id,
+        });
+      }
+
+      const uploaded = [];
+
+      for (const file of files) {
+        const upload = await cloudinary.uploader.upload(file.path, {
+          folder: "nexus/colleges",
+        });
+
+        const media = await Media.create({
+          url: upload.secure_url,
+          caption: body.caption || null,
+          description: body.description || null,
+          collegeId: college.id,
+        });
+
+        uploaded.push(media);
+      }
+
+      return uploaded;
+    }
+
+    throw new Error("Invalid create type");
   }
 
-  async getCities() {
-    return await City.findAll({
-      include: [{ model: College, as: "colleges" }],
-      order: [["id", "DESC"]],
-    });
+  /* ================= GET ================= */
+  async get(query) {
+    const { type } = query;
+
+    if (type === "city") {
+      return await City.findAll({
+        include: [{ model: College, as: "colleges", include: ["images"] }],
+      });
+    }
+
+    if (type === "college") {
+      return await College.findAll({
+        where: { cityId: query.cityId },
+        include: ["images"],
+      });
+    }
+
+    if (type === "media") {
+      return await Media.findAll({
+        where: { collegeId: query.collegeId },
+      });
+    }
+
+    throw new Error("Invalid get type");
   }
 
-  /* ========== COLLEGE ========== */
-  async createCollege(body) {
-    return await College.create(body);
-  }
+  /* ================= UPDATE ================= */
+  async update(body, files) {
+    const { type, id, caption, description } = body;
 
-  async getCollegesByCity(cityId) {
-    return await College.findAll({
-      where: { cityId },
-      include: [{ model: Media, as: "images" }],
-    });
-  }
+    if (type !== "media") {
+      throw new Error("Only media image update supported here");
+    }
 
-  async getCollegeById(collegeId) {
-    const college = await College.findByPk(collegeId, {
-      include: [
-        { model: City, as: "city" },
-        { model: Media, as: "images" },
-      ],
-    });
-  
-    if (!college) throw new Error("College not found");
-    return college;
-  }
+    const media = await Media.findByPk(id);
+    if (!media) throw new Error("Media not found");
 
-  /* ========== MEDIA / IMAGES (MULTIPLE) ========== */
-  async uploadImages(collegeId, files, caption, description) {
-    const uploadedImages = [];
+    let updatedData = {
+      caption: caption ?? media.caption,
+      description: description ?? media.description,
+    };
 
-    for (const file of files) {
-      const uploaded = await cloudinary.uploader.upload(file.path, {
+    // 🔁 IMAGE REPLACEMENT LOGIC
+    if (files && files.length > 0) {
+      const file = files[0];
+
+      /* 1️⃣ Delete old image from Cloudinary */
+      const oldUrl = media.url;
+      const publicId = oldUrl.split("/").pop().split(".")[0];
+
+      await cloudinary.uploader.destroy(`nexus/colleges/${publicId}`);
+
+      /* 2️⃣ Upload new image */
+      const upload = await cloudinary.uploader.upload(file.path, {
         folder: "nexus/colleges",
       });
 
-      const media = await Media.create({
-        url: uploaded.secure_url,
-        caption,
-        description,
-        collegeId,
-      });
-
-      uploadedImages.push(media);
+      /* 3️⃣ Update DB url */
+      updatedData.url = upload.secure_url;
     }
 
-    return uploadedImages;
-  }
-
-  async getImagesByCollege(collegeId) {
-    return await Media.findAll({
-      where: { collegeId },
-      order: [["id", "DESC"]],
-    });
-  }
-
-  /* ===================== CITY ===================== */
-  async updateCity(id, body) {
-    const city = await City.findByPk(id);
-    if (!city) throw new Error("City not found");
-
-    await city.update(body);
-    return city;
-  }
-
-  async deleteCity(id) {
-    const city = await City.findByPk(id);
-    if (!city) throw new Error("City not found");
-
-    await city.destroy();
-    return { message: "City deleted successfully" };
-  }
-
-  /* ===================== COLLEGE ===================== */
-  async updateCollege(id, body) {
-    const college = await College.findByPk(id);
-    if (!college) throw new Error("College not found");
-
-    await college.update(body);
-    return college;
-  }
-
-  async deleteCollege(id) {
-    const college = await College.findByPk(id);
-    if (!college) throw new Error("College not found");
-
-    await college.destroy();
-    return { message: "College deleted successfully" };
-  }
-
-  /* ===================== MEDIA ===================== */
-  async updateMedia(id, body) {
-    const media = await Media.findByPk(id);
-    if (!media) throw new Error("Media not found");
-
-    await media.update({
-      caption: body.caption ?? media.caption,
-      description: body.description ?? media.description,
-      url: body.url ?? media.url,
-      collegeId: body.collegeId ?? media.collegeId,
-    });
-
+    await media.update(updatedData);
     return media;
   }
 
-  async deleteMedia(id) {
-    const media = await Media.findByPk(id);
-    if (!media) throw new Error("Media not found");
+  /* ================= DELETE ================= */
+  async remove(body) {
+    const { type, id } = body;
 
-    await media.destroy();
-    return { message: "Media deleted successfully" };
+    if (type === "city") {
+      const city = await City.findByPk(id);
+      if (!city) throw new Error("City not found");
+      await city.destroy();
+      return { message: "City deleted" };
+    }
+
+    if (type === "college") {
+      const college = await College.findByPk(id);
+      if (!college) throw new Error("College not found");
+      await college.destroy();
+      return { message: "College deleted" };
+    }
+
+    if (type === "media") {
+      const media = await Media.findByPk(id);
+      if (!media) throw new Error("Media not found");
+      await media.destroy();
+      return { message: "Media deleted" };
+    }
+
+    throw new Error("Invalid delete type");
   }
 }
 
