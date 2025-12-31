@@ -36,4 +36,25 @@ router.delete("/college/:id", protect, mediaController.deleteCollege);
 router.put("/media/:id", protect, mediaController.updateMedia);
 router.delete("/media/:id", protect, mediaController.deleteMedia);
 
+/*
+  ONE API FOR EVERYTHING
+*/
+
+router.post(
+  "/CreateMedia",
+  upload.array("files", 10),
+  mediaController.handleCreate
+);
+
+router.get("/GetMedia/:id", mediaController.handleGet);
+
+router.put(
+  "/UpdateMedia/:id",
+  protect,
+  upload.array("files", 1),
+  mediaController.handleUpdate
+);
+
+router.delete("/DeleteMedia/:id", protect, mediaController.handleDelete);
+
 export default router;
