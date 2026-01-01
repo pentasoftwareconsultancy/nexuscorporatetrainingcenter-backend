@@ -11,6 +11,7 @@ import uploadRoutes from "./routes/uploads/video.routes.js";
 import placementRoutes from "./routes/comman/placement.routes.js";
 import facultyRoutes from "./routes/faculty/faculty.routes.js";
 import reviewRoutes from "./routes/reviews/review.route.js";
+import contactRoutes from "./routes/contact/contact.routes.js";
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use("/api/uploads", uploadRoutes);
 app.use("/api/placement", placementRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/contact", contactRoutes);
 
 app.get("/api/user/profile", protect, (req, res) => {
   res.json({ message: "Welcome to your profile!", userId: req.user.id });
