@@ -47,6 +47,23 @@ const videoController = {
     }
   },
 
+  /* ===================== GET ONE ===================== */
+  getVideo: async (req, res) => {
+    try {
+      const videoId = req.params.id;
+      const video = await videoService.getVideo(videoId);
+      if (!video) {
+        return res.status(404).json({
+          success: false,
+          message: "Video not found",
+        });
+      }
+      res.json({ success: true, data: video });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  },
+
   /* ===================== UPDATE ===================== */
   updateVideo: async (req, res) => {
     try {

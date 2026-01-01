@@ -17,6 +17,8 @@ router.post(
 
 // GET ALL VIDEOS
 router.get("/video", videoController.getAllVideos);
+// GET ONE VIDEO
+router.get("/video/:id", videoController.getVideo);
 
 // UPDATE VIDEO
 router.put(
