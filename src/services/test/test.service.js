@@ -6,6 +6,8 @@ import {
   UserAnswer,
   UserTest,
 } from "../../models/test/test.models.js";
+import User from "../../models/users/user.model.js";
+import { Op, Sequelize } from "sequelize";
 
 class TestService {
   // CATEGORY
@@ -164,6 +166,136 @@ class TestService {
       where: { userId, testId },
       order: [["attempt_number", "DESC"]], // or id DESC
     });
+  }
+
+  // ------------------------- Result View --------------------------------------
+  async getLoggedInUserLatestSummary(userId) {
+    const userTest = await UserTest.findOne({
+      where: { userId },
+      order: [["id", "DESC"]], // 👈 latest attempt by UserTest id
+      include: [
+        {
+          model: UserAnswer,
+          as: "userAnswers",
+          include: [
+            {
+              model: Question,
+              attributes: ["id", "question_text", "answer_explanation"],
+              include: [
+                {
+                  model: Option,
+                  as: "options",
+                  attributes: ["id", "option_text", "is_correct"],
+                },
+              ],
+            },
+            {
+              model: Option,
+              attributes: ["id", "option_text", "is_correct"],
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!userTest) return null;
+
+    return {
+      userTestId: userTest.id,
+      testId: userTest.testId,
+      attempt_number: userTest.attempt_number,
+      total_questions: userTest.total_questions,
+      correct_answers: userTest.correct_answers,
+      score: userTest.score,
+
+      questions: userTest.userAnswers.map((ua) => ({
+        questionId: ua.Question.id,
+        question_text: ua.Question.question_text,
+        answer_explanation: ua.Question.answer_explanation,
+
+        options: ua.Question.options.map((o) => ({
+          id: o.id,
+          text: o.option_text,
+          is_correct: o.is_correct === true,
+        })),
+
+        user_selected_option_id: ua.optionId,
+        user_selected_option_text: ua.Option?.option_text ?? null,
+        user_is_correct: ua.is_correct === true,
+
+        correct_option: ua.Question.options.find((o) => o.is_correct === true)
+          ? {
+              id: ua.Question.options.find((o) => o.is_correct === true).id,
+              text: ua.Question.options.find((o) => o.is_correct === true)
+                .option_text,
+            }
+          : null,
+      })),
+    };
+  }
+
+  // ---------------------------- Certification ---------------------------------
+  async getCertifiedCategories(userId) {
+    // Latest attempt per test
+    const latestAttempts = await UserTest.findAll({
+      where: { userId },
+      attributes: [
+        "testId",
+        [Sequelize.fn("MAX", Sequelize.col("id")), "latestUserTestId"],
+      ],
+      group: ["testId"],
+      raw: true,
+    });
+
+    const latestIds = latestAttempts.map((a) => a.latestUserTestId);
+
+    const passedTests = await UserTest.findAll({
+      where: {
+        id: { [Op.in]: latestIds },
+        score: { [Op.gte]: 75 },
+      },
+      include: [
+        {
+          model: Test,
+          as: "test",
+          include: [{ model: TestCategory, as: "category" }],
+        },
+        {
+          model: User,
+          as: "user", // 👈 must match the alias from UserTest.belongsTo(User)
+        },
+      ],
+    });
+
+    if (!passedTests.length) return [];
+
+    // Group & verify category completion
+    const categoryMap = {};
+
+    for (const attempt of passedTests) {
+      const catId = attempt.test.category.id;
+
+      if (!categoryMap[catId]) {
+        const totalTestsInCategory = await Test.count({
+          where: { categoryId: catId },
+        });
+
+        categoryMap[catId] = {
+          categoryId: catId,
+          categoryName: attempt.test.category.name,
+          userName: attempt.user.userName,
+          userId,
+          totalTests: totalTestsInCategory,
+          passedTests: 0,
+        };
+      }
+
+      categoryMap[catId].passedTests++;
+    }
+
+    return Object.values(categoryMap).filter(
+      (c) => c.totalTests === c.passedTests
+    );
   }
 }
 

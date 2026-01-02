@@ -124,7 +124,7 @@ const testController = {
   getUserTestSummary: async (req, res) => {
     try {
       const { userTestId } = req.params;
-    
+
       const userTest = await UserTest.findOne({
         where: { id: userTestId },
         include: [
@@ -133,7 +133,7 @@ const testController = {
             include: [
               {
                 model: Option,
-                attributes: ["id", "option_text", "is_correct"]
+                attributes: ["id", "option_text", "is_correct"],
               },
               {
                 model: Question,
@@ -141,20 +141,20 @@ const testController = {
                 include: [
                   {
                     model: Option,
-                    attributes: ["id", "option_text", "is_correct"]
-                  }
-                ]
-              }
-            ]
-          }
+                    attributes: ["id", "option_text", "is_correct"],
+                  },
+                ],
+              },
+            ],
+          },
         ],
         order: [[UserAnswer, "questionId", "ASC"]],
       });
-    
+
       if (!userTest) {
         return res.status(404).json({ message: "User Test not found" });
       }
-    
+
       // Transform the data into a clean response
       const summary = {
         userTestId: userTest.id,
@@ -165,23 +165,69 @@ const testController = {
           questionId: ua.Question.id,
           question_text: ua.Question.question_text,
           answer_explanation: ua.Question.answer_explanation,
-        
+
           options: ua.Question.Options.map((opt) => ({
             id: opt.id,
             text: opt.option_text,
-            is_correct: opt.is_correct === 1
+            is_correct: opt.is_correct === 1,
           })),
-        
+
           user_answer_option_id: ua.optionId,
-          user_is_correct: ua.is_correct === 1
-        }))
+          user_is_correct: ua.is_correct === 1,
+        })),
       };
-    
+
       return res.json(summary);
-    
     } catch (err) {
       console.error("Get Test Summary Error:", err);
       return res.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+
+  // Result View
+  getLoggedInUserLatestSummary: async (req, res) => {
+    try {
+      const userId = req.user.id;
+
+      const data = await testService.getLoggedInUserLatestSummary(userId);
+
+      if (!data) {
+        return res.status(404).json({
+          success: false,
+          message: "No test attempts found",
+        });
+      }
+
+      res.json({ success: true, data });
+    } catch (err) {
+      console.error("Latest User Summary Error:", err);
+      res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
+      });
+    }
+  },
+
+  // --------------------------- Certification ------------------------------------
+  getCertifiedCategories: async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const data = await testService.getCertifiedCategories(userId);
+
+      if (!data) {
+        return res.status(404).json({
+          success: false,
+          message: "No test attempts found",
+        });
+      }
+
+      res.json({
+        success: true,
+        certified: data,
+      });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ success: false, message: "Server error" });
     }
   },
 };
