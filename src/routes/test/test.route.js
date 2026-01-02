@@ -31,4 +31,10 @@ router.get("/latest/:testId", protect, testController.getLatestAttempt);
 // GET all attempts for a test
 router.get("/usertest/:userTestId/summary", testController.getUserTestSummary);
 
+// GET user result view
+router.get("/me/latest/summary", protect, testController.getLoggedInUserLatestSummary);
+
+// GET certification
+router.get("/certification/eligible", protect, testController.getCertifiedCategories);
+
 export default router;
