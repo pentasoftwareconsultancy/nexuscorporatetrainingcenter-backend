@@ -251,7 +251,7 @@ class TestService {
 
     const passedTests = await UserTest.findAll({
       where: {
-        id: { [Op.in]: latestIds },
+        id: { [Op.in]: latestIds }, 
         score: { [Op.gte]: 75 },
       },
       include: [
