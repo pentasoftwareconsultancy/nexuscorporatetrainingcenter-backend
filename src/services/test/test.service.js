@@ -251,7 +251,7 @@ class TestService {
 
     const passedTests = await UserTest.findAll({
       where: {
-        id: { [Op.in]: latestIds }, 
+        id: { [Op.in]: latestIds },
         score: { [Op.gte]: 75 },
       },
       include: [
@@ -296,6 +296,40 @@ class TestService {
     return Object.values(categoryMap).filter(
       (c) => c.totalTests === c.passedTests
     );
+  }
+
+  // -------------------------Admin Side Functions -------------------------------
+  // get
+  async getAllTestsWithDetails() {
+    return await Test.findAll({
+      include: [
+        { model: TestCategory, as: "category" },
+        {
+          model: Question,
+          as: "questions",
+          include: [{ model: Option, as: "options" }],
+        },
+      ],
+    });
+  }
+
+  async getFullTestById(testId) {
+    return await Test.findByPk(testId, {
+      include: [
+        { model: TestCategory, as: "category" },
+        {
+          model: Question,
+          as: "questions",
+          include: [{ model: Option, as: "options" }],
+        },
+      ],
+    });
+  }
+
+  async getQuestionWithOptions(questionId) {
+    return await Question.findByPk(questionId, {
+      include: [{ model: Option, as: "options" }],
+    });
   }
 }
 

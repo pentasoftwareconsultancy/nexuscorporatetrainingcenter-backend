@@ -4,6 +4,14 @@ import { protect } from "../../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
+// -------------------------Admin Side ROUTES -------------------------------
+// COMBINED DATA ROUTES
+router.get("/full",protect, testController.getAllTestsWithDetails); 
+router.get("/full/test/:testId",protect, testController.getFullTestById);
+router.get("/full/question/:questionId",protect, testController.getQuestionWithOptions);
+
+// -------------------------General TEST ROUTES -------------------------------
+
 // CATEGORY
 router.post("/category", protect, testController.createCategory);
 router.get("/category", testController.getCategories);
@@ -36,5 +44,6 @@ router.get("/me/latest/summary", protect, testController.getLoggedInUserLatestSu
 
 // GET certification
 router.get("/certification/eligible", protect, testController.getCertifiedCategories);
+
 
 export default router;
