@@ -230,6 +230,43 @@ const testController = {
       res.status(500).json({ success: false, message: "Server error" });
     }
   },
+
+  // -------------------------Admin Side Functions -------------------------------
+  // get
+  getAllTestsWithDetails: async (req, res) => {
+    try {
+      const data = await testService.getAllTestsWithDetails();
+      res.json({ success: true, data });
+    } catch (e) {
+      res.status(500).json({ success: false, message: e.message });
+    }
+  },
+
+  getFullTestById: async (req, res) => {
+    try {
+      const { testId } = req.params;
+      const data = await testService.getFullTestById(testId);
+
+      if (!data) return res.status(404).json({ message: "Test not found" });
+
+      res.json({ success: true, data });
+    } catch (e) {
+      res.status(500).json({ success: false, message: e.message });
+    }
+  },
+
+  getQuestionWithOptions: async (req, res) => {
+    try {
+      const { questionId } = req.params;
+      const data = await testService.getQuestionWithOptions(questionId);
+
+      if (!data) return res.status(404).json({ message: "Question not found" });
+
+      res.json({ success: true, data });
+    } catch (e) {
+      res.status(500).json({ success: false, message: e.message });
+    }
+  },
 };
 
 export default testController;
