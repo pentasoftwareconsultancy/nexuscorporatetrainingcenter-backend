@@ -30,10 +30,7 @@ export const register = async (req, res) => {
     /* Check existing user (email OR phone) */
     const existingUser = await User.findOne({
       where: {
-        [Op.or]: [
-          { emailOrPhone },
-          { phoneNumber }
-        ],
+        [Op.or]: [{ emailOrPhone }, { phoneNumber }],
       },
     });
 
@@ -45,8 +42,8 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 12);
     const hashedAnswer = passwordRecoveryAnswer
-  ? await bcrypt.hash(passwordRecoveryAnswer, 12)
-  : null;
+      ? await bcrypt.hash(passwordRecoveryAnswer, 12)
+      : null;
 
     const user = await User.create({
       userName,
@@ -180,21 +177,43 @@ export const verifyRecoveryAnswer = async (req, res) => {
 /* RESET PASSWORD - STEP 3 */
 export const resetPassword = async (req, res) => {
   try {
-    const { resetToken, newPassword, confirmNewPassword } = req.body;
+    const { resetToken, newPassword, confirmPassword } = req.body;
 
-    if (newPassword !== confirmNewPassword) {
+    // 1️⃣ Validate input
+    if (!resetToken || !newPassword || !confirmPassword) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // 2️⃣ Match passwords
+    if (newPassword !== confirmPassword) {
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
-    const decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
+    // 3️⃣ Verify token
+    let decoded;
+    try {
+      decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
+    } catch (err) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired reset token" });
+    }
 
-    const hashed = await bcrypt.hash(newPassword, 12);
+    // 4️⃣ Find user
+    const user = await User.findByPk(decoded.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-    await User.update({ password: hashed }, { where: { id: decoded.id } });
+    // 5️⃣ Hash & update password
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    user.password = hashedPassword;
+    await user.save();
 
-    res.json({ message: "Password reset successfully" });
+    return res.json({ message: "Password reset successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error resetting password", error });
+    console.error("RESET PASSWORD ERROR:", error);
+    return res.status(500).json({ message: "Error resetting password" });
   }
 };
 
@@ -214,7 +233,8 @@ export const getAllUsers = async (req, res) => {
 
     const users = await User.findAndCountAll({
       where,
-      attributes: ["id",
+      attributes: [
+        "id",
         "userName",
         "emailOrPhone",
         "phoneNumber",
@@ -245,13 +265,7 @@ export const getAllUsers = async (req, res) => {
 export const updateUserByAdmin = async (req, res) => {
   try {
     const { id } = req.params;
-    const {
-      userName,
-      emailOrPhone,
-      phoneNumber,
-      role,
-      password
-    } = req.body;
+    const { userName, emailOrPhone, phoneNumber, role, password } = req.body;
 
     // 1️⃣ Check user exists
     const user = await User.findByPk(id);
@@ -315,7 +329,7 @@ export const getLoggedInUser = async (req, res) => {
         "emailOrPhone",
         "phoneNumber",
         "role",
-        "createdAt"
+        "createdAt",
       ],
     });
 
@@ -325,12 +339,12 @@ export const getLoggedInUser = async (req, res) => {
 
     res.json({
       message: "Logged in user fetched",
-      user
+      user,
     });
   } catch (error) {
     res.status(500).json({
       message: "Error fetching logged in user",
-      error: error.message
+      error: error.message,
     });
   }
 };
