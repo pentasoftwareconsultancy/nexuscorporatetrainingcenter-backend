@@ -12,6 +12,7 @@ import placementRoutes from "./routes/comman/placement.routes.js";
 import facultyRoutes from "./routes/faculty/faculty.routes.js";
 import reviewRoutes from "./routes/reviews/review.route.js";
 import contactRoutes from "./routes/contact/contact.routes.js";
+import admintestRoutes from "./routes/test/admintest.route.js";
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use("/api/master", master);
 app.use("/api/media", media);
 app.use("/api/events", eventRoutes);
 app.use("/api/tests", testRoutes);
+app.use("/api/admintests", admintestRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/placement", placementRoutes);
 app.use("/api/faculty", facultyRoutes);
