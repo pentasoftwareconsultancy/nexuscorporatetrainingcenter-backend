@@ -168,7 +168,10 @@ export const verifyRecoveryAnswer = async (req, res) => {
       expiresIn: "10m",
     });
 
-    res.json({ message: "Verified", resetToken });
+    return res.json({
+      message: "Answer verified",
+      resetToken,
+    });
   } catch (error) {
     res.status(500).json({ message: "Error verifying answer", error });
   }
