@@ -424,7 +424,7 @@ class PlacementService {
         try {
           await cloudinary.uploader.destroy(placement.cloudinaryId);
         } catch (e) {
-          console.log("⚠️ Cloudinary delete failed", e);
+          // console.log("⚠️ Cloudinary delete failed", e);
         }
       }
   

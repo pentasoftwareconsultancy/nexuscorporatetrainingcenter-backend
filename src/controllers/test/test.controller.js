@@ -103,9 +103,9 @@ const testController = {
   getLatestAttempt: async (req, res) => {
     try {
       const { testId } = req.params; // /latest/:testId
-      console.log("testId:", testId);
+      // console.log("testId:", testId);
       const userId = req.user.id;
-      console.log("userId:", userId);
+      // console.log("userId:", userId);
 
       const data = await testService.getLatestAttempt(userId, testId);
 
@@ -226,7 +226,7 @@ const testController = {
         certified: data,
       });
     } catch (err) {
-      console.log(err);
+      // console.log(err);
       res.status(500).json({ success: false, message: "Server error" });
     }
   },
