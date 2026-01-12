@@ -40,4 +40,4 @@ export const EventStories = sequelize.define(
   }
 );
 
-sequelize.options.logging = console.log;
+// sequelize.options.logging = console.log;

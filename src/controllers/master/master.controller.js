@@ -188,7 +188,7 @@ const masterController = {
 
   // =============================== BATCHES ===============================
   createBatch: async (req, res) => {
-    console.log("BODY RECEIVED:", req.body); // <-- ADD THIS
+    // console.log("BODY RECEIVED:", req.body); // <-- ADD THIS
     try {
       const data = await masterService.createBatch(req.body);
 
