@@ -20,14 +20,14 @@ const start = async () => {
   try {
     // Connect DB
     await sequelize.authenticate();
-    console.log("MySQL connected successfully!");
+    // console.log("MySQL connected successfully!");
 
     // Setup associations ONCE
     setupAssociations();
 
     // Sync database ONLY ONE TIME
     await sequelize.sync({ alter: false }); // <-- NO alter, NO force
-    console.log("Database synced successfully!");
+    // console.log("Database synced successfully!");
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);

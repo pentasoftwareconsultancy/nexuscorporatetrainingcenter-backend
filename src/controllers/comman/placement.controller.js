@@ -162,7 +162,7 @@ export const getAllPlacementDetails = async (req, res) => {
 export const getPlacementDetails = async (req, res) => {
   try {
     const data = await placementService.getPlacementDetails(req.params.id);
-    console.log(data);
+    // console.log(data);
     if (!data) {
       return res.status(404).json({ message: "Not found" });
     }
@@ -257,11 +257,11 @@ export const getAllPlacementData = async (req, res) => {
 
 export const updateFullPlacement = async (req, res) => {
   try {
-    console.log("========= POSTMAN DEBUG =========");
-    console.log("HEADERS:", req.headers);
-    console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
-    console.log("=================================");
+    // console.log("========= POSTMAN DEBUG =========");
+    // console.log("HEADERS:", req.headers);
+    // console.log("BODY:", req.body);
+    // console.log("FILE:", req.file);
+    // console.log("=================================");
 
     const placementId = req.params.placementId;
     const filePath = req.file?.path;
@@ -293,11 +293,11 @@ export const updateFullPlacement = async (req, res) => {
 
 export const createFullPlacement = async (req, res) => {
   try {
-    console.log("========= CREATE DEBUG =========");
-    console.log("HEADERS:", req.headers);
-    console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
-    console.log("================================");
+    // console.log("========= CREATE DEBUG =========");
+    // console.log("HEADERS:", req.headers);
+    // console.log("BODY:", req.body);
+    // console.log("FILE:", req.file);
+    // console.log("================================");
 
     const filePath = req.file?.path;
 
@@ -306,7 +306,7 @@ export const createFullPlacement = async (req, res) => {
       try {
         req.body.details = JSON.parse(req.body.details);
       } catch (e) {
-        console.log("❌ DETAILS JSON PARSE FAILED");
+        // console.log("❌ DETAILS JSON PARSE FAILED");
       }
     }
 
@@ -319,7 +319,7 @@ export const createFullPlacement = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -345,7 +345,7 @@ export const deleteFullPlacement = async (req, res) => {
       message: "Placement deleted successfully",
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(500).json({
       success: false,
       message: error.message,

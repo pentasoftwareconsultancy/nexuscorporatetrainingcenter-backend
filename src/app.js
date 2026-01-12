@@ -13,6 +13,7 @@ import facultyRoutes from "./routes/faculty/faculty.routes.js";
 import reviewRoutes from "./routes/reviews/review.route.js";
 import contactRoutes from "./routes/contact/contact.routes.js";
 import admintestRoutes from "./routes/test/admintest.route.js";
+import dashboardRoutes from "./routes/dashboard/dashboard.route.js";
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use("/api/placement", placementRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api", dashboardRoutes);
 
 app.get("/api/user/profile", protect, (req, res) => {
   res.json({ message: "Welcome to your profile!", userId: req.user.id });

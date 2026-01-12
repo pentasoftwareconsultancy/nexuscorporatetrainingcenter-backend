@@ -30,4 +30,4 @@ export const Contact = sequelize.define("Contact", {
   timestamps: true,
 });
 
-sequelize.options.logging = console.log;
+// sequelize.options.logging = console.log;
