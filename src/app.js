@@ -44,8 +44,8 @@ app.use("/api/placement", placementRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/contact", contactRoutes);
-app.use("/api", dashboardRoutes);
 app.use("/api/certification", certificationRoutes);
+app.use("/api", dashboardRoutes);
 
 app.get("/api/user/profile", protect, (req, res) => {
   res.json({ message: "Welcome to your profile!", userId: req.user.id });
