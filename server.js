@@ -3,6 +3,7 @@ import app from "./src/app.js";
 import { sequelize } from "./src/config/db.js";
 import cross from "cors";
 import { setupAssociations } from "./src/models/comman/associations.js";
+import { setupUserTestHooks } from "./src/hooks/userTest.hooks.js";
 
 dotenv.config();
 const PORT = process.env.PORT || 5000;
@@ -24,6 +25,7 @@ const start = async () => {
 
     // Setup associations ONCE
     setupAssociations();
+    setupUserTestHooks();
 
     // Sync database ONLY ONE TIME
     await sequelize.sync({ alter: false }); // <-- NO alter, NO force
