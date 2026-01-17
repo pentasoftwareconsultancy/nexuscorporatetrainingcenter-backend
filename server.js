@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import app from "./src/app.js";
 import { sequelize } from "./src/config/db.js";
-import cross from "cors";
+import cors from "cors";
 import { setupAssociations } from "./src/models/comman/associations.js";
 import { setupUserTestHooks } from "./src/hooks/userTest.hooks.js";
 
