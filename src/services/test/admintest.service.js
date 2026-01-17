@@ -28,7 +28,7 @@ class adminTestService {
           categoryId: category.id,
           status,
         },
-        { transaction: t }
+        { transaction: t },
       );
 
       return { category, test };
@@ -57,7 +57,7 @@ class adminTestService {
     return await sequelize.transaction(async (t) => {
       const question = await Question.create(
         { testId, question_text, answer_explanation },
-        { transaction: t }
+        { transaction: t },
       );
 
       const optionPayload = options.map((o) => ({
@@ -102,7 +102,7 @@ class adminTestService {
     return await sequelize.transaction(async (t) => {
       await Question.update(
         { question_text, answer_explanation },
-        { where: { id: questionId }, transaction: t }
+        { where: { id: questionId }, transaction: t },
       );
 
       await Option.destroy({
@@ -116,7 +116,7 @@ class adminTestService {
           is_correct: o.is_correct,
           questionId,
         })),
-        { transaction: t }
+        { transaction: t },
       );
 
       return true;
@@ -178,17 +178,79 @@ class adminTestService {
       if (categoryName) {
         await TestCategory.update(
           { name: categoryName },
-          { where: { id: test.categoryId }, transaction: t }
+          { where: { id: test.categoryId }, transaction: t },
         );
       }
 
       // update test
       await Test.update(
         { title: testTitle, status },
-        { where: { id: testId }, transaction: t }
+        { where: { id: testId }, transaction: t },
       );
 
       return true;
+    });
+  }
+
+  // ============================
+  // BULK QUESTIONS FROM EXCEL
+  // ============================
+  async createQuestionsWithOptionsBulk(testId, rows) {
+    return await sequelize.transaction(async (t) => {
+      let questionCount = 0;
+
+      for (const row of rows) {
+        const {
+          Question: question_text,
+          "Option A": optionA,
+          "Option B": optionB,
+          "Option C": optionC,
+          "Option D": optionD,
+          "Correct Option": correctOption,
+          Explanation,
+        } = row;
+
+        if (!question_text || !correctOption) continue;
+
+        // 1️⃣ create question
+        const question = await Question.create(
+          {
+            testId,
+            question_text,
+            answer_explanation: Explanation,
+          },
+          { transaction: t },
+        );
+
+        // 2️⃣ create options (same structure as single API)
+        const options = [
+          { option_text: optionA, key: "A" },
+          { option_text: optionB, key: "B" },
+          { option_text: optionC, key: "C" },
+          { option_text: optionD, key: "D" },
+        ]
+          .filter((o) => o.option_text)
+          .map((o) => ({
+            option_text: o.option_text,
+            is_correct: o.key.toUpperCase() === correctOption.toUpperCase(),
+            questionId: question.id,
+          }));
+
+        await Option.bulkCreate(options, { transaction: t });
+
+        questionCount++;
+      }
+
+      // 3️⃣ update total_questions once
+      await Test.increment("total_questions", {
+        by: questionCount,
+        where: { id: testId },
+        transaction: t,
+      });
+
+      return {
+        inserted: questionCount,
+      };
     });
   }
 }

@@ -1,4 +1,5 @@
 import adminTestService from "../../services/test/admintest.service.js";
+import xlsx from "xlsx";
 
 const adminTestController = {
   createCategoryWithTest: async (req, res) => {
@@ -78,9 +79,35 @@ const adminTestController = {
     try {
       await adminTestService.updateCategoryWithTest(
         req.params.testId,
-        req.body
+        req.body,
       );
       res.json({ message: "Category & Test updated successfully" });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  },
+
+  createQuestionsWithOptionsBulk: async (req, res) => {
+    try {
+      const { testId } = req.params;
+
+      if (!req.file) {
+        return res.status(400).json({ message: "Excel file required" });
+      }
+
+      const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = xlsx.utils.sheet_to_json(sheet);
+
+      const data = await adminTestService.createQuestionsWithOptionsBulk(
+        testId,
+        rows,
+      );
+
+      res.status(201).json({
+        message: "Bulk questions created successfully",
+        ...data,
+      });
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
