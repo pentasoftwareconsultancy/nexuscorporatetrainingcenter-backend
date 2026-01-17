@@ -1,6 +1,8 @@
 import express from "express";
 import adminTestController from "../../controllers/test/admintest.controller.js";
 import { protect } from "../../middlewares/auth.middleware.js";
+import multer from "multer";
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = express.Router();
 
@@ -16,5 +18,8 @@ router.get("/test/:testId/questions", protect, adminTestController.getQuestionsB
 router.post("/question", protect, adminTestController.createQuestionWithOptions);
 router.put("/question/:id", protect, adminTestController.updateQuestionWithOptions);
 router.delete("/question", protect, adminTestController.deleteQuestion);
+
+// BULK EXCEL CREATION
+router.post( "/bulk/:testId", protect, upload.single("file"), adminTestController.createQuestionsWithOptionsBulk);
 
 export default router;
